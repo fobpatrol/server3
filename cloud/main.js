@@ -18,7 +18,7 @@ Parse.Cloud.define('status', Install.status);
 Parse.Cloud.define('install', Install.start);
 
 // Admin Dashboard
-Parse.Cloud.define('dashboard', Dashboard.home)
+Parse.Cloud.define('dashboard', Dashboard.home);
 
 // GalleryActivity
 Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);

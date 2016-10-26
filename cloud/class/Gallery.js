@@ -456,7 +456,7 @@ function feed(req, res, next) {
             .then(_data => {
                 let _result = [];
 
-                if (!_data.length) {
+                if (!_data && !_data.length) {
                     res.success(_result);
                 }
 
