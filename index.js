@@ -103,14 +103,14 @@ if (MAILGUN_API_KEY) {
             // Verification email body
             verificationBody: 'Hi,\n\nYou are being asked to confirm the e-mail address %email% with %appname%\n\nClick here to confirm it:\n%link%',
             //OPTIONAL (will send HTML version of email):
-            verificationBodyHTML: fs.readFileSync("./email/verificationBody.html", "utf8") ||  null,
+            //verificationBodyHTML: require('fs').readFileSync("./email/verificationBody.html", "utf8") ||  null,
 
             // Password reset email subject
             passwordResetSubject: 'Password Reset Request for %appname%',
             // Password reset email body
             passwordResetBody: 'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here to reset it:\n%link%',
             //OPTIONAL (will send HTML version of email):
-            passwordResetBodyHTML: "<!DOCTYPE html><html xmlns=http://www.w3.org/1999/xhtml>........"
+            //passwordResetBodyHTML: "<!DOCTYPE html><html xmlns=http://www.w3.org/1999/xhtml>........"
         }
     };
 }
