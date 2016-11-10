@@ -49,16 +49,18 @@ function beforeSave(req, res) {
 
     // Search Gallery
     //https://parse.com/docs/js/guide#performance-implement-efficient-searches
-    let toLowerCase = w => w.toLowerCase();
-    var words       = gallery.get('title').split(/\b/);
-    words           = _.map(words, toLowerCase);
-    var stopWords   = ['the', 'in', 'and']
-    words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
-    var hashtags    = gallery.get('title').match(/#.+?\b/g);
-    hashtags        = _.map(hashtags, toLowerCase)
+    if (gallery.get('title')) {
+        let toLowerCase = w => w.toLowerCase();
+        var words       = gallery.get('title').split(/\b/);
+        words           = _.map(words, toLowerCase);
+        var stopWords   = ['the', 'in', 'and']
+        words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
+        var hashtags    = gallery.get('title').match(/#.+?\b/g);
+        hashtags        = _.map(hashtags, toLowerCase)
 
-    gallery.set('words', words);
-    gallery.set('hashtags', hashtags);
+        gallery.set('words', words);
+        gallery.set('hashtags', hashtags);
+    }
 
     // Resize Image
     if (!gallery.existed()) {
@@ -79,6 +81,8 @@ function beforeSave(req, res) {
             gallery.increment('likesTotal', 0);
             gallery.increment('galleriesTotal', 0);
             gallery.increment('commentsTotal', 0);
+            gallery.increment('views', 0);
+            gallery.setACL(new Parse.ACL(req.user));
 
             new Parse.Query('UserData').equalTo('user', user).first(MasterKey).then(profile => {
 
@@ -304,6 +308,7 @@ function search(req, res, next) {
                         title        : itemGallery.get('title'),
                         commentsTotal: itemGallery.get('commentsTotal') || 0,
                         likesTotal   : itemGallery.get('likesTotal') || 0,
+                        views        : itemGallery.get('views') || 0,
                         isApproved   : itemGallery.get('isApproved'),
                         user         : {
                             obj     : itemGallery.get('user'),
@@ -362,11 +367,17 @@ function search(req, res, next) {
 
 function getAlbum(req, res) {
     const params = req.params;
+    const _page  = req.params.page || 1;
+    const _limit = req.params.limit || 24;
+
     new Parse.Query(GalleryAlbum)
         .get(params.id)
         .then(album => {
 
             new Parse.Query(ParseObject)
+                .descending('createdAt')
+                .limit(_limit)
+                .skip((_page * _limit) - _limit)
                 .equalTo('album', album)
                 .find(MasterKey)
                 .then(photos => {
@@ -456,7 +467,7 @@ function feed(req, res, next) {
             .then(_data => {
                 let _result = [];
 
-                if (!_data && !_data.length) {
+                if (!_data.length) {
                     res.success(_result);
                 }
 
@@ -482,10 +493,12 @@ function feed(req, res, next) {
                             title        : _gallery.get('title'),
                             commentsTotal: _gallery.get('commentsTotal') || 0,
                             likesTotal   : _gallery.get('likesTotal') || 0,
+                            views        : _gallery.get('views') || 0,
                             isApproved   : _gallery.get('isApproved'),
                             user         : _userData
                         };
                         //console.log('Obj', obj);
+
 
                         // Is Liked
                         new Parse.Query('Gallery')
@@ -513,6 +526,10 @@ function feed(req, res, next) {
                                         //console.log('itemGallery', itemGallery, user, comments);
                                         // Comments
                                         _result.push(obj);
+
+                                        // Incremment Gallery
+                                        _gallery.increment('views');
+                                        _gallery.save();
                                         cb();
 
                                     }, error => res.error(error.message));
@@ -571,7 +588,9 @@ function likeGallery(req, res, next) {
         return objParse.save(null, MasterKey);
 
     }).then(data => {
-        GalleryActivity.create(activity);
+        if (user.id != objParse.attributes.user.id) {
+            GalleryActivity.create(activity);
+        }
         res.success(response);
     }, error => res.error);
 }
