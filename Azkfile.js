@@ -37,22 +37,23 @@ systems({
             DOMAIN: "#{system.name}.#{azk.default_domain}",
             SERVER_URL: "#{system.name}.#{azk.default_domain}/parse",
             // DEFINES
-            MONGOLAB_URI: 'mongodb://photouser:db3123123gram@ds015403.mlab.com:15403/photogram2-db',
             APP_NAME: 'Photogram',
             APP_ID: 'myAppId',
             MASTER_KEY: 'myMasterKey',
             MASTER_REST_KEY: 'MPhotogramMasterKey',
+
+            // DASHBOARD
+            DASHBOARD_USER: 'admin',
+            DASHBOARD_PASSWORD: 'admin123',
+
             // S3
-            AWS_ACCESS_KEY_ID: 'AKIAJ2PRIH7MX5SKEDNQ',
-            AWS_SECRET_ACCESS_KEY: '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',
-            BUCKET_NAME: 'nearme-s3',
+            // AWS_ACCESS_KEY_ID: '',
+            // AWS_SECRET_ACCESS_KEY: '',
+            // BUCKET_NAME: '',
             //MAILGUN EMAIL
-            MAILGUN_API_KEY: 'key-3a05e956706a4bd579982460b96cf43a',
-            MAILGUN_DOMAIN: '',
-            MAILGUN_FROM_ADDRESS: '',
-            // ONE SIGNAL PUSH
-            ONE_SIGNAL_APP_ID: "",
-            ONE_SIGNAL_API_KEY: "",
+            // MAILGUN_API_KEY: 'key-3a05e956706a4bd579982460b96cf43a',
+            // MAILGUN_DOMAIN: '',
+            // MAILGUN_FROM_ADDRESS: '',
         },
     },
 
