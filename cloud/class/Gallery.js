@@ -49,18 +49,16 @@ function beforeSave(req, res) {
 
     // Search Gallery
     //https://parse.com/docs/js/guide#performance-implement-efficient-searches
-    if (gallery.get('title')) {
-        let toLowerCase = w => w.toLowerCase();
-        var words       = gallery.get('title').split(/\b/);
-        words           = _.map(words, toLowerCase);
-        var stopWords   = ['the', 'in', 'and']
-        words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
-        var hashtags    = gallery.get('title').match(/#.+?\b/g);
-        hashtags        = _.map(hashtags, toLowerCase)
+    let toLowerCase = w => w.toLowerCase();
+    var words       = gallery.get('title').split(/\b/);
+    words           = _.map(words, toLowerCase);
+    var stopWords   = ['the', 'in', 'and']
+    words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
+    var hashtags    = gallery.get('title').match(/#.+?\b/g);
+    hashtags        = _.map(hashtags, toLowerCase)
 
-        gallery.set('words', words);
-        gallery.set('hashtags', hashtags);
-    }
+    gallery.set('words', words);
+    gallery.set('hashtags', hashtags);
 
     // Resize Image
     if (!gallery.existed()) {
@@ -82,7 +80,6 @@ function beforeSave(req, res) {
             gallery.increment('galleriesTotal', 0);
             gallery.increment('commentsTotal', 0);
             gallery.increment('views', 0);
-            gallery.setACL(new Parse.ACL(req.user));
 
             new Parse.Query('UserData').equalTo('user', user).first(MasterKey).then(profile => {
 
@@ -90,10 +87,11 @@ function beforeSave(req, res) {
                 gallery.set('user', user);
                 gallery.set('isApproved', true);
                 gallery.set('profile', profile);
+                //gallery.setACL(new Parse.Parse.ACL(req.user));
                 return res.success();
             });
 
-        }, res.error);
+        }).catch(res.error);
     } else {
         res.success();
     }
@@ -137,7 +135,7 @@ function afterDelete(req, res) {
         promises.push(decrementAlbum);
     }
 
-    Parse.Promise.when(promises).then(res.success, res.error);
+    Parse.Promise.when(promises).then(res.success).catch(res.error);
 
 
 }
@@ -235,11 +233,10 @@ function commentGallery(req, res) {
 
                             _result.push(obj);
                             cb();
-                        }, err => console.log);
+                        }).catch(res.error);
                     });
-                }, error => res.error(error.message))
-        })
-    ;
+                }).catch(res.error);
+        });
 }
 
 
@@ -357,11 +354,11 @@ function search(req, res, next) {
                                     _result.push(obj);
                                     cb();
 
-                                }, error => res.error(error.message));
-                        }, error => res.error(error.message));
-                }, err => console.log);
+                                }).catch(res.error);
+                        }).catch(res.error);
+                }).catch(res.error);
             });
-        }, error => res.error(error.message))
+        }).catch(res.error);
 
 }
 
@@ -386,9 +383,9 @@ function getAlbum(req, res) {
                         photos: photos
                     };
                     res.success(result);
-                }, res.error)
+                }).catch(res.error);
 
-        }, res.error);
+        }).catch(res.error);
 }
 
 function feed(req, res, next) {
@@ -438,7 +435,7 @@ function feed(req, res, next) {
                     _query.containedIn('privacity', ['', null, undefined, 'public', 'follow']);
                     console.log(following);
                     runQuery();
-                }, res.error);
+                }).catch(res.error);
         }
 
         // Me
@@ -467,7 +464,7 @@ function feed(req, res, next) {
             .then(_data => {
                 let _result = [];
 
-                if (!_data.length) {
+                if (!_data && !_data.length) {
                     res.success(_result);
                 }
 
@@ -534,9 +531,9 @@ function feed(req, res, next) {
 
                                     }, error => res.error(error.message));
                             }, error => res.error(error.message));
-                    }, err => console.log);
+                    }).catch(res.error);
                 });
-            }, error => res.error(error.message))
+            }).catch(res.error);
     }
 }
 
@@ -607,6 +604,6 @@ function isGalleryLiked(req, res, next) {
         .equalTo('likes', user)
         .equalTo('objectId', galleryId)
         .first(MasterKey)
-        .then(gallery => res.success(gallery ? true : false), error => res.error(error.message));
+        .then(gallery => res.success(gallery ? true : false)).catch(res.error);
 }
 

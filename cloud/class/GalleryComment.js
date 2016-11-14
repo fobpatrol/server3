@@ -64,15 +64,10 @@ function afterSave(req, res) {
                 gallery : gallery
             };
 
-            let promises = [
+            return Parse.Promise.when([
+                GalleryActivity.create(activity),
                 User.incrementComment(req.user)
-            ];
-
-            if (req.user.id != gallery.attributes.user.id) {
-                promises.push(GalleryActivity.create(activity));
-            }
-
-            return Parse.Promise.when(promises);
+            ]);
 
         })
 
