@@ -21,8 +21,8 @@ Parse.Cloud.define('install', Install.start);
 Parse.Cloud.define('dashboard', Dashboard.home);
 
 // GalleryActivity
-Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
 Parse.Cloud.define('feedActivity', GalleryActivity.feed);
+// Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
 
 // User
 Parse.Cloud.beforeSave(Parse.User, User.beforeSave);

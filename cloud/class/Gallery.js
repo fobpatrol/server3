@@ -64,12 +64,8 @@ function beforeSave(req, res) {
     if (!gallery.existed()) {
         let imageUrl = gallery.get('image').url();
         console.log('Resize image', imageUrl);
-        Image.resize(imageUrl, 640, 640).then(base64 => {
-            return Image.saveImage(base64);
-        }).then(savedFile => {
-            gallery.set('image', savedFile);
-            return Image.resize(imageUrl, 160, 160);
-        }).then(base64 => {
+
+        return Image.resize(imageUrl, 160, 160).then(base64 => {
             return Image.saveImage(base64);
         }).then(savedFile => {
             gallery.set('imageThumb', savedFile);

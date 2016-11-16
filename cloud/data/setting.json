@@ -26,5 +26,9 @@
   {
     "key": "imageQuality",
     "value": "90"
+  },
+  {
+    "key": "liveVideo",
+    "value": "false"
   }
 ]
