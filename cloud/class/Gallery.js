@@ -384,7 +384,7 @@ function getAlbum(req, res) {
         }).catch(res.error);
 }
 
-function feed(req, res, next) {
+function feed(req, res) {
     const params = req.params;
     const _page  = req.params.page || 1;
     const _limit = req.params.limit || 24;
@@ -403,6 +403,8 @@ function feed(req, res, next) {
         _query.equalTo('objectId', params.id);
     }
 
+    console.log('feed');
+
     if (params.username) {
         new Parse.Query(Parse.User)
             .equalTo('username', params.username)
@@ -416,22 +418,25 @@ function feed(req, res, next) {
             });
     } else {
         // Follow
-        if (params.privacity === 'follow') {
+        if (params.privacity === 'followers') {
             new Parse.Query(UserFollow)
                 .equalTo('from', req.user)
                 .include('user')
                 .find(MasterKey)
                 .then(users => {
-                    let following = _.map(users, userFollow => {
-                        return userFollow.get('to');
+                    let following = [];
+                    _.map(users, userFollow => {
+                        let user = userFollow.get('to');
+                        if (!_.some(following, {id: user.id})) {
+                            following.push(user)
+                        }
                     });
                     following.push(req.user);
 
                     _query.containedIn('user', following)
-                    _query.containedIn('privacity', ['', null, undefined, 'public', 'follow']);
-                    console.log(following);
+                    _query.containedIn('privacity', ['', null, undefined, 'public']);
                     runQuery();
-                }).catch(res.error);
+                }, res.error);
         }
 
         // Me
@@ -450,6 +455,8 @@ function feed(req, res, next) {
 
 
     function runQuery() {
+        console.log('runQuery');
+
         _query
             .equalTo('isApproved', true)
             .descending('createdAt')
@@ -460,13 +467,7 @@ function feed(req, res, next) {
             .then(_data => {
                 let _result = [];
 
-                if (!_data && !_data.length) {
-                    res.success(_result);
-                }
-
-                let cb = _.after(_data.length, () => {
-                    res.success(_result);
-                });
+                let cb = _.after(_data.length, () => res.success(_result));
 
                 _.each(_data, _gallery => {
 
@@ -521,15 +522,25 @@ function feed(req, res, next) {
                                         _result.push(obj);
 
                                         // Incremment Gallery
-                                        _gallery.increment('views');
-                                        _gallery.save();
+                                        //_gallery.increment('views');
+                                        //_gallery.save();
                                         cb();
 
-                                    }, error => res.error(error.message));
-                            }, error => res.error(error.message));
-                    }).catch(res.error);
+                                    }, error => {
+                                        // Comments
+                                        _result.push(obj);
+
+                                        // Incremment Gallery
+                                        //_gallery.increment('views');
+                                        //_gallery.save();
+                                        cb();
+                                    });
+                            }, res.error);
+                    }, res.error);
                 });
-            }).catch(res.error);
+
+
+            }, res.error);
     }
 }
 
@@ -600,6 +611,6 @@ function isGalleryLiked(req, res, next) {
         .equalTo('likes', user)
         .equalTo('objectId', galleryId)
         .first(MasterKey)
-        .then(gallery => res.success(gallery ? true : false)).catch(res.error);
+        .then(gallery => res.success(gallery ? true : false), res.error);
 }
 
