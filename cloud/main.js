@@ -5,7 +5,6 @@ const Gallery         = require('./class/Gallery');
 const GalleryAlbum    = require('./class/GalleryAlbum');
 const GalleryActivity = require('./class/GalleryActivity');
 const GalleryComment  = require('./class/GalleryComment');
-const ChatChannel     = require('./class/ChatChannel');
 const Dashboard       = require('./class/Dashboard');
 const Push            = require('./class/Push');
 
