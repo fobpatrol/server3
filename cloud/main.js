@@ -5,6 +5,7 @@ const Gallery         = require('./class/Gallery');
 const GalleryAlbum    = require('./class/GalleryAlbum');
 const GalleryActivity = require('./class/GalleryActivity');
 const GalleryComment  = require('./class/GalleryComment');
+const ChatChannel     = require('./class/ChatChannel');
 const Dashboard       = require('./class/Dashboard');
 const Push            = require('./class/Push');
 
@@ -16,6 +17,9 @@ Parse.Cloud.define('pushChat', Push.pushChat);
 // Install
 Parse.Cloud.define('status', Install.status);
 Parse.Cloud.define('install', Install.start);
+
+// Chat
+Parse.Cloud.define('getChatChannel', ChatChannel.getChatChannel);
 
 // Admin Dashboard
 Parse.Cloud.define('dashboard', Dashboard.home);

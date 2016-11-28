@@ -10,7 +10,7 @@ const S3Adapter      = require('parse-server').S3Adapter;
 
 // Parse configuration
 const PORT            = process.env.PORT || 1337;
-const DATABASE_URI    = process.env.MONGO_URL || process.env.DATABASE_URI || process.env.MONGOLAB_URI || process.env.MONGODB_URI  || 'mongodb://localhost:27017/dev';
+const DATABASE_URI    = process.env.MONGO_URL || process.env.DATABASE_URI || process.env.MONGOLAB_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev';
 const SERVER_URL      = process.env.SERVER_URL || 'http://localhost:1337/parse';
 const APP_ID          = process.env.APP_ID || 'myAppId';
 const MASTER_KEY      = process.env.MASTER_KEY || 'myMasterKey';
@@ -42,21 +42,25 @@ let ServerConfig = {
     // enableAnonymousUsers    : true,
     // allowClientClassCreation: true,
     maxUploadSize   : '10mb',
-    // liveQuery       : {
-    //     classNames: [],
-        //redisURL  : REDIS_URL
-    // },
+    liveQuery       : {
+        classNames: ['ChatChannel', 'ChatMessage'],
+    },
 };
 
+// Redis
+if(REDIS_URL) {
+    ServerConfig.liveQuery['redisURL'] = REDIS_URL;
+}
+
 // Push Android
-if(PUSH_ANDROID_SENDER) {
+if (PUSH_ANDROID_SENDER) {
     ServerConfig.push({
-         push: {
-             android: {
-                 senderId: PUSH_ANDROID_SENDER,
-                 apiKey  : PUSH_ANDROID_API_KEY
-             }
-         }
+        push: {
+            android: {
+                senderId: PUSH_ANDROID_SENDER,
+                apiKey  : PUSH_ANDROID_API_KEY
+            }
+        }
     })
 }
 
@@ -92,23 +96,23 @@ if (MAILGUN_API_KEY) {
         module : 'parse-server-simple-mailgun-adapter',
         options: {
             // The address that your emails come from
-            fromAddress         : MAILGUN_FROM_ADDRESS,
+            fromAddress: MAILGUN_FROM_ADDRESS,
             // Your domain from mailgun.com
-            domain              : MAILGUN_DOMAIN,
+            domain     : MAILGUN_DOMAIN,
             // Your API key from mailgun.com
-            apiKey              : MAILGUN_API_KEY,
+            apiKey     : MAILGUN_API_KEY,
 
             // Verification email subject
             verificationSubject: 'Please verify your e-mail for %appname%',
             // Verification email body
-            verificationBody: 'Hi,\n\nYou are being asked to confirm the e-mail address %email% with %appname%\n\nClick here to confirm it:\n%link%',
+            verificationBody   : 'Hi,\n\nYou are being asked to confirm the e-mail address %email% with %appname%\n\nClick here to confirm it:\n%link%',
             //OPTIONAL (will send HTML version of email):
             //verificationBodyHTML: require('fs').readFileSync("./email/verificationBody.html", "utf8") ||  null,
 
             // Password reset email subject
             passwordResetSubject: 'Password Reset Request for %appname%',
             // Password reset email body
-            passwordResetBody: 'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here to reset it:\n%link%',
+            passwordResetBody   : 'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here to reset it:\n%link%',
             //OPTIONAL (will send HTML version of email):
             //passwordResetBodyHTML: "<!DOCTYPE html><html xmlns=http://www.w3.org/1999/xhtml>........"
         }
