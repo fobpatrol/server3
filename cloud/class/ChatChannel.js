@@ -2,14 +2,19 @@
 const _           = require('lodash');
 const ParseObject = Parse.Object.extend('ChatChannel');
 const ChatMessage = Parse.Object.extend('ChatMessage');
-const UserData    = Parse.Object.extend('UserData');
+const User        = require('./User');
 const MasterKey   = {useMasterKey: true};
 
 module.exports = {
+    get           : get,
     getChatChannel: getChatChannel,
     createChannel : createChannel,
 };
 
+
+function get(channel) {
+    return new Parse.Query(ParseObject).get(channel);
+}
 
 function createChannel(req, res) {
     const user  = req.user;
@@ -21,33 +26,19 @@ function createChannel(req, res) {
         return res.error('Not Authorized');
     }
 
-
-    new ParseObject().save().then(_channel => {
-
-        new Parse.Query(Parse.User)
-            .equalTo('username', req.params.username)
-            .first(MasterKey)
-            .then(user => {
-                // Users
-                let relation = _channel.relation('users');
-                // Add my user
-                relation.add(user);
-                // Add Other Users
-                users.map(user => relation.add(user.obj));
-                return new Parse.Query(UserData).equalTo('user', user).first();
-
-            }).then(profile => {
-            let relation2 = _channel.relation('profiles');
+    new ParseObject()
+        .save()
+        .then(_channel => {
+            // Users
+            let relation = _channel.relation('users');
             // Add my user
-            relation2.add(profile.obj);
+            relation.add(user);
             // Add Other Users
-            users.map(user => {
-                console.log('userDataObj', user, user.userDataObj);
-                relation2.add(user.userDataObj);
-            });
+            users.map(user => relation.add(user.obj));
             return _channel.save(res.success, res.error);
-        }, res.error);
-    })
+        })
+        .then(res.success)
+        .catch(res.error);
 
 
 }
@@ -86,13 +77,11 @@ function getChatChannel(req, res) {
                 };
                 console.log('obj', obj);
 
-                _channel.relation('users').query().find().then(_users => {
-                    obj.users = _.filter(_users, _user => {
-                        console.log('filter', user.id, _user.id);
-                        return user.id != _user.id
-                    });
+                _channel.relation('users').query().find(MasterKey).then(_users => {
+                    obj.users = _.filter(_users, _user => user.id != _user.id);
 
-                    let promises = _.map(obj.users, user => new Parse.Query('UserData').equalTo('user', user).first());
+                    let promises = _.map(obj.users, user => new Parse.Query('UserData').equalTo('user', user)
+                                                                                       .first(MasterKey));
 
                     new Parse.Promise.when(promises).then(profiles => {
                         obj.profiles = profiles;

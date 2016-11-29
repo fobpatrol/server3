@@ -647,22 +647,21 @@ function createUser(req, res, next) {
     }, error => res.error(error.message));
 }
 
+
+function findUsername(username) {
+    return new Parse.Query(Parse.User).equalTo('username', username).first(MasterKey);
+}
+
+function findUserData(user) {
+    return new Parse.Query(UserData).equalTo('user', user).first(MasterKey);
+}
 function findUserByUsername(req, res, next) {
-    new Parse.Query(Parse.User)
-        .equalTo('username', req.params.username)
-        .first(MasterKey)
-        .then(user => {
-            new Parse.Query(UserData)
-                .equalTo('user', user)
-                .first()
-                .then(userdata => {
-                    if (userdata) {
-                        res.success(userdata);
-                    } else {
-                        res.error(false);
-                    }
-                }, error => res.error);
-        }, error => res.error(error.message));
+    const username = req.params.username;
+
+    findUsername(username)
+        .then(findUserData)
+        .then(res.success)
+        .catch(res.error)
 }
 
 function findUserByEmail(req, res, next) {
