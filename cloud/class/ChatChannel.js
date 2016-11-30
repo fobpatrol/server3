@@ -36,7 +36,7 @@ function createChatChannel(req, res) {
         // Define relattion in Parse Object
         let relation = channel.relation('users');
         // Add Actual user
-        _users.push(new Parse.User.current());
+        _users.push(user);
         // Map Users for relation
         _users.map(user => relation.add(user));
         // Create and save new Channel
