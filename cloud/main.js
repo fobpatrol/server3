@@ -21,6 +21,7 @@ Parse.Cloud.define('install', Install.start);
 
 // Chat Channel
 Parse.Cloud.define('getChatChannel', ChatChannel.getChatChannel);
+Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 
 // Chat Message
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);

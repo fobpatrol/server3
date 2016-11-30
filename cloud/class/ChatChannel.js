@@ -6,9 +6,9 @@ const User        = require('./User');
 const MasterKey   = {useMasterKey: true};
 
 module.exports = {
-    get           : get,
-    getChatChannel: getChatChannel,
-    createChannel : createChannel,
+    get              : get,
+    getChatChannel   : getChatChannel,
+    createChatChannel: createChatChannel,
 };
 
 
@@ -16,29 +16,33 @@ function get(channel) {
     return new Parse.Query(ParseObject).get(channel);
 }
 
-function createChannel(req, res) {
-    const user  = req.user;
-    const users = req.params.users;
-    console.log('user', user);
-    console.log('users', users);
+function createChatChannel(req, res) {
+    const user    = req.user;
+    const users   = req.params.users;
+    const message = req.params.message;
 
     if (!user) {
         return res.error('Not Authorized');
     }
 
-    new ParseObject()
-        .save()
-        .then(_channel => {
-            // Users
-            let relation = _channel.relation('users');
-            // Add my user
-            relation.add(user);
-            // Add Other Users
-            users.map(user => relation.add(user.obj));
-            return _channel.save(res.success, res.error);
-        })
-        .then(res.success)
-        .catch(res.error);
+    if (!users) {
+        return res.error('Not users');
+    }
+
+    new Parse.Promise.when(users.map(user => User.get(user))).then(_users => {
+
+        // Define new Parse Object in memory
+        let channel  = new ParseObject();
+        // Define relattion in Parse Object
+        let relation = channel.relation('users');
+        // Add Actual user
+        _users.push(new Parse.User.current());
+        // Map Users for relation
+        _users.map(user => relation.add(user));
+        // Create and save new Channel
+        return channel.save().then(res.success).catch(res.error);
+
+    }).catch(res.error);
 
 
 }

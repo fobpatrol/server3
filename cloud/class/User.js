@@ -604,7 +604,7 @@ function profile(req, res) {
 }
 
 function get(userId) {
-    return new Parse.Query(ParseObject).get(userId);
+    return new Parse.Query(Parse.User).equalTo('objectId', userId).first(MasterKey);
 }
 
 function avatar(obj) {
