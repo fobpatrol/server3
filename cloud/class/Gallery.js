@@ -462,7 +462,7 @@ function feed(req, res) {
             .descending('createdAt')
             .limit(_limit)
             .skip((_page * _limit) - _limit)
-            .include('album')
+            .include(['user,album'])
             .find(MasterKey)
             .then(_data => {
                 let _result = [];
@@ -473,9 +473,7 @@ function feed(req, res) {
 
                     // User Data
                     const userGet = _gallery.get('user');
-                    new Parse.Query('UserData').equalTo('user', userGet).first(MasterKey).then(_userData => {
-
-                        let obj = {
+                    let obj = {
                             id           : _gallery.id,
                             obj          : _gallery,
                             comments     : [],
@@ -489,7 +487,13 @@ function feed(req, res) {
                             likesTotal   : _gallery.get('likesTotal') || 0,
                             views        : _gallery.get('views') || 0,
                             isApproved   : _gallery.get('isApproved'),
-                            user         : _userData
+                            user         : {
+                                id:    userGet.id,
+                                name: userGet.get('name'), 
+                                username: userGet.get('username'),
+                                status: userGet.get('status'),
+                                photo: userGet.get('photo'),
+                            }
                         };
                         //console.log('Obj', obj);
 
@@ -536,7 +540,6 @@ function feed(req, res) {
                                         cb();
                                     });
                             }, res.error);
-                    }, res.error);
                 });
 
 
