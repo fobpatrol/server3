@@ -97,11 +97,33 @@ function list(req, res, next) {
         new Parse.Query('User')
             .equalTo('username', params.username)
             .first(MasterKey)
-            .then(user=> {
-                runQuery(user)
-            });
+            .then(runQuery);
     } else {
         runQuery(req.user);
+    }
+
+    function parseData(data){
+        let result = [];
+        data.map(item=>{
+            let obj = {
+                id: item.id,
+                _id: item.id,
+                image: item.get('image'),
+                imageThumb: item.get('imageThumb'),
+                title: item.get('title'),
+                description: item.get('description'),
+                qtyPhotos: item.get('qtyPhotos') || 0,
+                createdAt: item.createdAt,
+                user: {
+                    id: item.get('user').id,
+                    name: item.get('user').get('name'),
+                    username: item.get('user').get('username'),
+                    photo: item.get('user').get('photo'),
+                }
+            };
+            result.push(obj);
+        });
+        return Promise.resolve(result);
     }
 
     function runQuery(user) {
@@ -111,8 +133,11 @@ function list(req, res, next) {
             .skip((_page * _limit) - _limit)
             .equalTo('user', user)
             .find(MasterKey)
-            .then(data=> res.success(data), error=> res.error(error.message))
+            .then(parseData)
+            .then(res.success)
+            .catch(error=> res.error(error.message))
     }
+    
 
 }
 

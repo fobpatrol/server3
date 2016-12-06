@@ -3,6 +3,7 @@ const _               = require('lodash');
 const Image           = require('./../helpers/image');
 const User            = require('./../class/User');
 const GalleryActivity = require('./../class/GalleryActivity');
+const GalleryComment  = require('./../class/GalleryComment');
 const ParseObject     = Parse.Object.extend('Gallery');
 const GalleryAlbum    = Parse.Object.extend('GalleryAlbum');
 const UserFollow      = Parse.Object.extend('UserFollow');
@@ -12,14 +13,40 @@ module.exports = {
     beforeSave    : beforeSave,
     afterSave     : afterSave,
     afterDelete   : afterDelete,
+    get           : get,
     feed          : feed,
     search        : search,
     getAlbum      : getAlbum,
     commentGallery: commentGallery,
     isGalleryLiked: isGalleryLiked,
     likeGallery   : likeGallery,
+    parseGallery  : parseGallery
 };
 
+function parseGallery(item) {
+    let obj = {};
+    if (item) {
+        obj = {
+            id           : item.id,
+            _id          : item.id,
+            title        : item.get('title'),
+            commentsTotal: item.get('commentsTotal'),
+            likesTotal   : item.get('likesTotal'),
+            image        : item.get('image'),
+            imageThumb   : item.get('imageThumb'),
+            isLiked      : false,
+            comments     : [],
+            user         : {},
+            createdAt    : item.createdAt,
+        }
+    }
+
+    if (item.get('user')) {
+        obj.user = User.parseUser(item.get('user'))
+    }
+
+    return obj;
+}
 
 function beforeSave(req, res) {
     const gallery = req.object;
@@ -137,22 +164,24 @@ function afterDelete(req, res) {
 }
 
 function afterSave(req) {
-    const user = req.user;
+    const user    = req.user;
+    const albumId = req.object.get('albumId');
 
     if (req.object.existed()) {
         return
     }
 
     // Add Album Relation
-    if (req.object.attributes.album) {
-        let _albumId = req.object.attributes.album.id;
-        new Parse.Query('GalleryAlbum').get(_albumId).then(album => {
+    if (albumId) {
+        new Parse.Query('GalleryAlbum').get(albumId).then(album => {
             let relation = album.relation('photos');
             relation.add(req.object);
             album.set('image', req.object.attributes.image);
             album.set('imageThumb', req.object.attributes.imageThumb);
             album.increment('qtyPhotos', 1);
             album.save(null, MasterKey);
+            // Save Album Relation
+            req.object.set('album', album).save();
         });
     }
 
@@ -166,6 +195,10 @@ function afterSave(req) {
 
     User.incrementGallery(user);
     GalleryActivity.create(activity);
+}
+
+function get(objectId) {
+    return new Parse.Query(ParseObject).equalTo('objectId', objectId).first(MasterKey);
 }
 
 function commentGallery(req, res) {
@@ -211,20 +244,7 @@ function commentGallery(req, res) {
                                 gallery.set('profile', user);
                                 gallery.save();
                             }
-
-                            let obj = {
-                                object   : itemComment,
-                                id       : itemComment.id,
-                                createdAt: itemComment.get('createdAt'),
-                                text     : itemComment.get('text'),
-                                user     : {
-                                    obj     : itemComment.get('user'),
-                                    username: user.get('username'),
-                                    name    : user.get('name'),
-                                    status  : user.get('status'),
-                                    photo   : user.get('photo')
-                                }
-                            };
+                            let obj = GalleryComment.parseComment(itemComment);
                             console.log('Obj', obj);
 
                             _result.push(obj);
@@ -291,26 +311,7 @@ function search(req, res, next) {
                     useMasterKey: true
                 }).then(user => {
 
-                    let obj = {
-                        id           : itemGallery.id,
-                        galleryObj   : itemGallery,
-                        comments     : [],
-                        createdAt    : itemGallery.get('createdAt'),
-                        image        : itemGallery.get('image'),
-                        imageThumb   : itemGallery.get('imageThumb'),
-                        title        : itemGallery.get('title'),
-                        commentsTotal: itemGallery.get('commentsTotal') || 0,
-                        likesTotal   : itemGallery.get('likesTotal') || 0,
-                        views        : itemGallery.get('views') || 0,
-                        isApproved   : itemGallery.get('isApproved'),
-                        user         : {
-                            obj     : itemGallery.get('user'),
-                            name    : user.get('name'),
-                            username: user.get('username'),
-                            status  : user.get('status'),
-                            photo   : user.get('photo')
-                        }
-                    };
+                    let obj = parseGallery(itemGallery);
                     //console.log('Obj', obj);
 
                     // Is Liked
@@ -331,20 +332,7 @@ function search(req, res, next) {
                                     useMasterKey: true
                                 })
                                 .then(comments => {
-                                    comments.map(function (comment) {
-                                        obj.comments.push({
-                                            id  : comment.id,
-                                            obj : comment,
-                                            user: {
-                                                obj     : itemGallery.get('user'),
-                                                name    : user.get('name'),
-                                                username: user.get('username'),
-                                                status  : user.get('status'),
-                                                photo   : user.get('photo')
-                                            },
-                                            text: comment.get('text'),
-                                        })
-                                    });
+                                    obj.comments = map.comments(comment => GalleryComment.parseComment(comment));
                                     //console.log('itemGallery', itemGallery, user, comments);
                                     // Comments
                                     _result.push(obj);
@@ -413,9 +401,7 @@ function feed(req, res) {
                 _query.equalTo('user', user);
                 _query.containedIn('privacity', ['', null, undefined, 'public']);
                 runQuery();
-            }, error => {
-                runQuery();
-            });
+            }).catch(error => runQuery());
     } else {
         // Follow
         if (params.privacity === 'followers') {
@@ -436,7 +422,7 @@ function feed(req, res) {
                     _query.containedIn('user', following)
                     _query.containedIn('privacity', ['', null, undefined, 'public']);
                     runQuery();
-                }, res.error);
+                }).catch(res.error);
         }
 
         // Me
@@ -472,74 +458,44 @@ function feed(req, res) {
                 _.each(_data, _gallery => {
 
                     // User Data
-                    const userGet = _gallery.get('user');
-                    let obj = {
-                            id           : _gallery.id,
-                            obj          : _gallery,
-                            comments     : [],
-                            album        : _gallery.get('album'),
-                            createdAt    : _gallery.get('createdAt'),
-                            image        : _gallery.get('image'),
-                            imageThumb   : _gallery.get('imageThumb'),
-                            location     : _gallery.get('location'),
-                            title        : _gallery.get('title'),
-                            commentsTotal: _gallery.get('commentsTotal') || 0,
-                            likesTotal   : _gallery.get('likesTotal') || 0,
-                            views        : _gallery.get('views') || 0,
-                            isApproved   : _gallery.get('isApproved'),
-                            user         : {
-                                id:    userGet.id,
-                                name: userGet.get('name'), 
-                                username: userGet.get('username'),
-                                status: userGet.get('status'),
-                                photo: userGet.get('photo'),
-                            }
-                        };
-                        //console.log('Obj', obj);
+                    let obj = parseGallery(_gallery);
 
+                    // Is Liked
+                    new Parse.Query('Gallery')
+                        .equalTo('likes', req.user)
+                        .equalTo('objectId', _gallery.id)
+                        .include(['user'])
+                        .first(MasterKey)
+                        .then(liked => {
+                            obj.isLiked = liked ? true : false;
 
-                        // Is Liked
-                        new Parse.Query('Gallery')
-                            .equalTo('likes', req.user)
-                            .equalTo('objectId', _gallery.id)
-                            .first(MasterKey)
-                            .then(liked => {
-                                obj.isLiked = liked ? true : false;
+                            // Comments
+                            new Parse.Query('GalleryComment')
+                                .equalTo('gallery', _gallery)
+                                .limit(3)
+                                .include(['user'])
+                                .find(MasterKey)
+                                .then(_comments => {
+                                    obj.comments = _comments.map(comment => GalleryComment.parseComment(comment));
+                                    //console.log('itemGallery', itemGallery, user, comments);
+                                    // Comments
+                                    _result.push(obj);
 
-                                // Comments
-                                new Parse.Query('GalleryComment')
-                                    .equalTo('gallery', _gallery)
-                                    .limit(3)
-                                    .include(['user'])
-                                    .find(MasterKey)
-                                    .then(_comments => {
-                                        _comments.map(function (_comment) {
-                                            obj.comments.push({
-                                                id  : _comment.id,
-                                                obj : _comment,
-                                                user: _comment.get('user'),
-                                                text: _comment.get('text'),
-                                            })
-                                        });
-                                        //console.log('itemGallery', itemGallery, user, comments);
-                                        // Comments
-                                        _result.push(obj);
+                                    // Incremment Gallery
+                                    //_gallery.increment('views');
+                                    //_gallery.save();
+                                    cb();
 
-                                        // Incremment Gallery
-                                        //_gallery.increment('views');
-                                        //_gallery.save();
-                                        cb();
+                                }, error => {
+                                    // Comments
+                                    _result.push(obj);
 
-                                    }, error => {
-                                        // Comments
-                                        _result.push(obj);
-
-                                        // Incremment Gallery
-                                        //_gallery.increment('views');
-                                        //_gallery.save();
-                                        cb();
-                                    });
-                            }, res.error);
+                                    // Incremment Gallery
+                                    //_gallery.increment('views');
+                                    //_gallery.save();
+                                    cb();
+                                });
+                        }, res.error);
                 });
 
 
