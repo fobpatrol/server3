@@ -206,19 +206,9 @@ function getLikers(req, res) {
                                     .find()
                                     .then(galleries => {
 
-                                        let profile = {
-                                            name           : userData.attributes.name,
-                                            username       : userData.attributes.username,
-                                            followersTotal : userData.attributes.followersTotal,
-                                            followingsTotal: userData.attributes.followingsTotal,
-                                            galleriesTotal : userData.attributes.galleriesTotal,
-                                            status         : userData.attributes.status,
-                                            photo          : userData.attributes.photo,
-                                            userObj        : user.attributes.to,
-                                            userDataObj    : userData,
-                                            isFollow       : isFollow ? true : false,
-                                            galleries      : galleries
-                                        }
+                                        let profile       = parseProfile(userData)
+                                        profile.isFollow  = isFollow ? true : false;
+                                        profile.galleries = galleries.map(item => Gallery.parseGallery(item))
                                         _result.push(profile);
                                         cb();
                                     });
@@ -270,19 +260,9 @@ function getFollowers(req, res) {
                                         .find()
                                         .then(galleries => {
 
-                                            let profile = {
-                                                name           : userData.attributes.name,
-                                                username       : userData.attributes.username,
-                                                followersTotal : userData.attributes.followersTotal,
-                                                followingsTotal: userData.attributes.followingsTotal,
-                                                galleriesTotal : userData.attributes.galleriesTotal,
-                                                status         : userData.attributes.status,
-                                                photo          : userData.attributes.photo,
-                                                obj            : user.attributes.from,
-                                                userDataObj    : userData,
-                                                isFollow       : isFollow ? true : false,
-                                                galleries      : galleries
-                                            }
+                                            let profile       = parseProfile(userData)
+                                            profile.isFollow  = isFollow ? true : false;
+                                            profile.galleries = galleries.map(item => Gallery.parseGallery(item))
                                             console.log('profile', profile);
                                             _result.push(profile);
                                             cb();
@@ -326,19 +306,9 @@ function getFollowers(req, res) {
                                 .find()
                                 .then(galleries => {
 
-                                    let profile = {
-                                        name           : userData.attributes.name,
-                                        username       : userData.attributes.username,
-                                        followersTotal : userData.attributes.followersTotal,
-                                        followingsTotal: userData.attributes.followingsTotal,
-                                        galleriesTotal : userData.attributes.galleriesTotal,
-                                        status         : userData.attributes.status,
-                                        photo          : userData.attributes.photo,
-                                        obj            : user.attributes.from,
-                                        userDataObj    : userData,
-                                        isFollow       : isFollow ? true : false,
-                                        galleries      : galleries
-                                    }
+                                    let profile       = parseProfile(userData)
+                                    profile.isFollow  = isFollow ? true : false;
+                                    profile.galleries = galleries.map(item => Gallery.parseGallery(item))
                                     console.log('profile', profile);
                                     _result.push(profile);
                                     cb();
@@ -356,120 +326,38 @@ function getFollowers(req, res) {
 function getFollowing(req, res) {
     const params = req.params;
 
-    if (params.username) {
-        new Parse.Query(ParseObject)
-            .equalTo('username', params.username)
-            .first(MasterKey)
-            .then(user => {
-                new Parse.Query(UserFollow)
-                    .equalTo('from', user)
-                    .include('user')
-                    .find(MasterKey)
-                    .then(data => {
+    findUsername(params.username)
+        .then(user => {
+            new Parse.Query(UserFollow)
+                .equalTo('from', user)
+                .include(['user'])
+                .find(MasterKey)
+                .then(userFollows => {
 
-                        let _result = [];
+                    let _result = [];
 
-                        if (!data.length) {
-                            res.success(_result);
-                        }
+                    if (!userFollows.length) res.success(_result);
 
-                        let cb = _.after(data.length, () => {
-                            res.success(_result);
-                        });
+                    let cb = _.after(userFollows.length, () => res.success(_result));
 
-                        _.each(data, user => {
+                    _.each(userFollows, userFollow => {
 
-                            // User Data
-                            new Parse.Query('UserData')
-                                .equalTo('user', user.attributes.to)
-                                .first(MasterKey)
-                                .then(userData => {
+                        // User Data
+                        new Parse.Query(UserData)
+                            .equalTo('user', userFollow.get('to'))
+                            .first(MasterKey)
+                            .then(userData => {
+                                if (userData) {
+                                    let profile = parseProfile(userData)
+                                    _result.push(profile);
+                                    cb();
+                                }
+                            }).catch(res.error);
+                    });
 
-                                    new Parse.Query('Gallery')
-                                        .equalTo('user', user.attributes.to)
-                                        .limit(3)
-                                        .descending('createdAt')
-                                        .find()
-                                        .then(galleries => {
+                }).catch(res.error);
 
-                                            let profile = {
-                                                name           : userData.attributes.name,
-                                                username       : userData.attributes.username,
-                                                followersTotal : userData.attributes.followersTotal,
-                                                followingsTotal: userData.attributes.followingsTotal,
-                                                galleriesTotal : userData.attributes.galleriesTotal,
-                                                status         : userData.attributes.status,
-                                                photo          : userData.attributes.photo,
-                                                userObj        : user.attributes.to,
-                                                userDataObj    : userData,
-                                                isFollow       : isFollow ? true : false,
-                                                galleries      : galleries
-                                            }
-                                            console.log('profile', profile);
-                                            _result.push(profile);
-                                            cb();
-                                        });
-
-                                }, res.error);
-                        });
-
-                    }, res.error);
-
-            })
-    } else {
-        new Parse.Query(UserFollow)
-            .equalTo('from', req.user)
-            .include('user')
-            .find(MasterKey)
-            .then(data => {
-
-                let _result = [];
-
-                if (!data.length) {
-                    res.success(_result);
-                }
-
-                let cb = _.after(data.length, () => {
-                    res.success(_result);
-                });
-
-                _.each(data, user => {
-
-                    // User Data
-                    new Parse.Query('UserData').equalTo('user', user.attributes.to).first(MasterKey)
-                                               .then(userData => {
-
-                                                   new Parse.Query('Gallery')
-                                                       .equalTo('user', user.attributes.to)
-                                                       .limit(3)
-                                                       .descending('createdAt')
-                                                       .find()
-                                                       .then(galleries => {
-
-                                                           let profile = {
-                                                               name           : userData.attributes.name,
-                                                               username       : userData.attributes.username,
-                                                               followersTotal : userData.attributes.followersTotal,
-                                                               followingsTotal: userData.attributes.followingsTotal,
-                                                               galleriesTotal : userData.attributes.galleriesTotal,
-                                                               status         : userData.attributes.status,
-                                                               photo          : userData.attributes.photo,
-                                                               userObj        : user.attributes.to,
-                                                               userDataObj    : userData,
-                                                               isFollow       : isFollow ? true : false,
-                                                               galleries      : galleries
-                                                           }
-                                                           console.log('profile', profile);
-                                                           _result.push(profile);
-                                                           cb();
-                                                       });
-
-                                               }, res.error);
-                });
-
-            }, res.error);
-
-    }
+        })
 }
 
 function follow(req, res) {
@@ -729,7 +617,8 @@ function listUsers(req, res, next) {
                             .then(galleries => {
                                 let profile       = parseUser(user);
                                 profile.isFollow  = isFollow ? true : false;
-                                profile.galleries = galleries.map(item => require('../class/Gallery').parseGallery(item));
+                                profile.galleries = galleries.map(item => require('../class/Gallery')
+                                    .parseGallery(item));
                                 _result.push(profile);
                                 cb();
                             }).catch(res.error);
@@ -940,21 +829,23 @@ function parseUser(user) {
     return obj;
 }
 
-function parseProfile(user) {
-    let obj = {
-        id             : user.get('user').id,
-        _id            : user.get('user').id,
-        name           : user.get('name'),
-        email          : user.get('email'),
-        username       : user.get('username'),
-        followersTotal : user.get('followersTotal'),
-        followingsTotal: user.get('followingsTotal'),
-        galleriesTotal : user.get('galleriesTotal'),
-        status         : user.get('status'),
-        photo          : user.get('photo'),
-        isFollow       : false,
-        galleries      : [],
-        createdAt      : user.createdAt
-    };
-    return obj;
+function parseProfile(userData) {
+    if (userData) {
+        let obj = {
+            id             : userData.get('user').id,
+            _id            : userData.get('user').id,
+            name           : userData.get('name'),
+            email          : userData.get('email'),
+            username       : userData.get('username'),
+            followersTotal : userData.get('followersTotal'),
+            followingsTotal: userData.get('followingsTotal'),
+            galleriesTotal : userData.get('galleriesTotal'),
+            status         : userData.get('status'),
+            photo          : userData.get('photo'),
+            isFollow       : false,
+            galleries      : [],
+            createdAt      : userData.createdAt
+        };
+        return obj;
+    }
 }
