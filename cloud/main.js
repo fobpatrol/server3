@@ -25,6 +25,7 @@ Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 
 // Chat Message
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
+Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
 
 // Admin Dashboard
 Parse.Cloud.define('dashboard', Dashboard.home);

@@ -12,8 +12,8 @@ module.exports = {
 };
 
 
-function get(channel) {
-    return new Parse.Query(ParseObject).get(channel);
+function get(objectId) {
+    return new Parse.Query(ParseObject).equalTo('objectId', objectId).first(MasterKey);
 }
 
 function createChatChannel(req, res) {

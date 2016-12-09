@@ -1,11 +1,11 @@
 'use strict';
+const _               = require('lodash');
 const Image           = require('../helpers/image');
 const GalleryActivity = require('../class/GalleryActivity');
 const ParseObject     = Parse.Object.extend('User');
 const UserFollow      = Parse.Object.extend('UserFollow');
 const UserData        = Parse.Object.extend('UserData');
 const Gallery         = Parse.Object.extend('Gallery');
-const _               = require('lodash');
 const MasterKey       = {useMasterKey: true};
 
 module.exports = {
