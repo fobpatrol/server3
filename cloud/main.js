@@ -69,6 +69,7 @@ Parse.Cloud.define('searchGallery', Gallery.search);
 Parse.Cloud.define('getAlbum', Gallery.getAlbum);
 Parse.Cloud.define('feedGallery', Gallery.feed);
 Parse.Cloud.define('commentGallery', Gallery.commentGallery);
+Parse.Cloud.define('getGallery', Gallery.getGallery);
 Parse.Cloud.define('likeGallery', Gallery.likeGallery);
 Parse.Cloud.define('isGalleryLiked', Gallery.isGalleryLiked);
 

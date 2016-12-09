@@ -14,6 +14,7 @@ module.exports = {
     afterSave     : afterSave,
     afterDelete   : afterDelete,
     get           : get,
+    getGallery    : getGallery,
     feed          : feed,
     search        : search,
     getAlbum      : getAlbum,
@@ -197,8 +198,15 @@ function afterSave(req) {
     GalleryActivity.create(activity);
 }
 
+function getGallery(req, res) {
+    get(req.params.id)
+        .then(gallery => parseGallery(gallery))
+        .then(res.success)
+        .catch(res.reject);
+}
+
 function get(objectId) {
-    return new Parse.Query(ParseObject).equalTo('objectId', objectId).first(MasterKey);
+    return new Parse.Query(ParseObject).equalTo('objectId', objectId).include(['user']).first(MasterKey);
 }
 
 function commentGallery(req, res) {
@@ -352,7 +360,8 @@ function getAlbum(req, res) {
     const _limit = req.params.limit || 24;
 
     new Parse.Query(GalleryAlbum)
-        .get(params.id)
+        .equalTo('objectId', params.id)
+        .first(MasterKey)
         .then(album => {
 
             new Parse.Query(ParseObject)
@@ -361,13 +370,9 @@ function getAlbum(req, res) {
                 .skip((_page * _limit) - _limit)
                 .equalTo('album', album)
                 .find(MasterKey)
-                .then(photos => {
-                    let result = {
-                        album : album,
-                        photos: photos
-                    };
-                    res.success(result);
-                }).catch(res.error);
+                .then(photos => photos.map(parseGallery))
+                .then(res.success)
+                .catch(res.error);
 
         }).catch(res.error);
 }

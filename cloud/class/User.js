@@ -370,9 +370,7 @@ function follow(req, res) {
         return res.error('Not Authorized');
     }
 
-    new Parse.Query(Parse.User)
-        .equalTo('objectId', params.userId)
-        .first(MasterKey)
+    get(params.userId)
         .then(toUser => {
 
             new Parse.Query(UserFollow)
@@ -387,9 +385,8 @@ function follow(req, res) {
                             isFollow.destroy(),
                             decrementFollowers(toUser),
                             decrementFollowing(req.user),
-                        ]).then(data => {
-                            res.success('unfollow');
-                        });
+                        ]).then(data => res.success('unfollow'))
+                         .catch(res.error);
                     } else {
 
                         // follow
@@ -402,7 +399,7 @@ function follow(req, res) {
                             .set('from', req.user)
                             .set('to', toUser)
                             .set('date', Date())
-                            .save(null, MasterKey)
+                            .save(MasterKey)
                             .then(data => {
                                 return Parse.Promise.when([
                                     incrementFollowing(req.user),
@@ -432,15 +429,15 @@ function isFollow(req, res) {
         return res.error('Not Authorized');
     }
     new Parse.Query(UserFollow)
-        .equalTo('from', user)
-        .equalto('to', params.to)
+        .equalTo('from', req.user)
+        .equalTo('to', params.to)
         .count(data => {
             if (data > 0) {
                 res.success('following')
             } else {
                 res.error('not following');
             }
-        }, error => {
+        }).catch(error => {
             res.error('not following');
         });
 }
@@ -458,11 +455,13 @@ function profile(req, res) {
         .then(toUser => {
             new Parse.Query(UserFollow)
                 .equalTo('from', req.user)
-                .equalTo('to', toUser)
-                .count()
+                .equalTo('to', toUser.get('user'))
+                .count(MasterKey)
                 .then(isFollow => {
                     let profile      = parseProfile(toUser);
                     profile.isFollow = isFollow ? true : false;
+                    console.log('isFollow', isFollow);
+                    console.log('profile', profile);
                     res.success(profile);
                 }).catch(res.error);
         }).catch(res.error);

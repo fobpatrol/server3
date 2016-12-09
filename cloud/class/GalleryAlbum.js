@@ -17,7 +17,7 @@ module.exports = {
 function afterDelete(req, res) {
     // Remove All Gallerys
     new Parse.Query('Gallery').equalTo('album', req.object).find({
-        success: items=> {
+        success: items => {
 
             // Decrement User Photos
             _.each(items, item => {
@@ -26,11 +26,11 @@ function afterDelete(req, res) {
 
             // Remove all Photos
             Parse.Object.destroyAll(items, {
-                success: ()=> {},
-                error  : error =>console.error("Error deleting related comments " + error.code + ": " + error.message)
+                success: () => {},
+                error  : error => console.error("Error deleting related comments " + error.code + ": " + error.message)
             });
         },
-        error  : error=>console.error("Error finding related comments " + error.code + ": " + error.message)
+        error  : error => console.error("Error finding related comments " + error.code + ": " + error.message)
     });
 }
 
@@ -52,7 +52,7 @@ function beforeSave(req, res) {
     var words       = gallery.get('title').split(/\b/);
     words           = _.map(words, toLowerCase);
     var stopWords   = ['the', 'in', 'and']
-    words           = _.filter(words, w=> w.match(/^\w+$/) && !_.includes(stopWords, w));
+    words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
     var hashtags    = gallery.get('title').match(/#.+?\b/g);
     hashtags        = _.map(hashtags, toLowerCase)
 
@@ -102,30 +102,6 @@ function list(req, res, next) {
         runQuery(req.user);
     }
 
-    function parseData(data){
-        let result = [];
-        data.map(item=>{
-            let obj = {
-                id: item.id,
-                _id: item.id,
-                image: item.get('image'),
-                imageThumb: item.get('imageThumb'),
-                title: item.get('title'),
-                description: item.get('description'),
-                qtyPhotos: item.get('qtyPhotos') || 0,
-                createdAt: item.createdAt,
-                user: {
-                    id: item.get('user').id,
-                    name: item.get('user').get('name'),
-                    username: item.get('user').get('username'),
-                    photo: item.get('user').get('photo'),
-                }
-            };
-            result.push(obj);
-        });
-        return Promise.resolve(result);
-    }
-
     function runQuery(user) {
         _query
             .descending('createdAt')
@@ -133,12 +109,29 @@ function list(req, res, next) {
             .skip((_page * _limit) - _limit)
             .equalTo('user', user)
             .find(MasterKey)
-            .then(parseData)
+            .then(data => data.map(parseAlbum))
             .then(res.success)
-            .catch(error=> res.error(error.message))
+            .catch(error => res.error(error.message))
     }
-    
+}
 
+function parseAlbum(item) {
+    return {
+        id         : item.id,
+        _id        : item.id,
+        image      : item.get('image'),
+        imageThumb : item.get('imageThumb'),
+        title      : item.get('title'),
+        description: item.get('description'),
+        qtyPhotos  : item.get('qtyPhotos') || 0,
+        createdAt  : item.createdAt,
+        user       : {
+            id      : item.get('user').id,
+            name    : item.get('user').get('name'),
+            username: item.get('user').get('username'),
+            photo   : item.get('user').get('photo'),
+        }
+    };
 }
 
 
