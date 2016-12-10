@@ -21,7 +21,8 @@ module.exports = {
     commentGallery: commentGallery,
     isGalleryLiked: isGalleryLiked,
     likeGallery   : likeGallery,
-    parseGallery  : parseGallery
+    parseGallery  : parseGallery,
+    destroyGallery: destroyGallery,
 };
 
 function parseGallery(item) {
@@ -578,3 +579,8 @@ function isGalleryLiked(req, res, next) {
         .then(gallery => res.success(gallery ? true : false), res.error);
 }
 
+function destroyGallery(req, res) {
+    get(req.param.id).then(gallery => {
+        gallery.destroy().then(res.success).catch(res.reject);
+    });
+}

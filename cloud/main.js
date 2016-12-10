@@ -72,6 +72,7 @@ Parse.Cloud.define('commentGallery', Gallery.commentGallery);
 Parse.Cloud.define('getGallery', Gallery.getGallery);
 Parse.Cloud.define('likeGallery', Gallery.likeGallery);
 Parse.Cloud.define('isGalleryLiked', Gallery.isGalleryLiked);
+Parse.Cloud.define('destroyGallery', Gallery.destroyGallery);
 
 // GalleryComment
 Parse.Cloud.beforeSave('GalleryComment', GalleryComment.beforeSave);
