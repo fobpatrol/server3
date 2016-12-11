@@ -21,9 +21,11 @@ Parse.Cloud.define('install', Install.start);
 
 // Chat Channel
 Parse.Cloud.define('getChatChannel', ChatChannel.getChatChannel);
+Parse.Cloud.define('getChatChannels', ChatChannel.getChatChannels);
 Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 
 // Chat Message
+Parse.Cloud.define('createMessage', ChatMessage.createMessage);
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
 Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
 
@@ -72,6 +74,7 @@ Parse.Cloud.define('commentGallery', Gallery.commentGallery);
 Parse.Cloud.define('getGallery', Gallery.getGallery);
 Parse.Cloud.define('likeGallery', Gallery.likeGallery);
 Parse.Cloud.define('isGalleryLiked', Gallery.isGalleryLiked);
+Parse.Cloud.define('updateGallery', Gallery.updateGallery);
 Parse.Cloud.define('destroyGallery', Gallery.destroyGallery);
 
 // GalleryComment

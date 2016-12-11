@@ -8,10 +8,11 @@ const MasterKey       = {useMasterKey: true};
 
 
 module.exports = {
-    beforeSave : beforeSave,
-    afterSave  : afterSave,
-    afterDelete: afterDelete,
-    list       : list,
+    beforeSave       : beforeSave,
+    afterSave        : afterSave,
+    afterDelete      : afterDelete,
+    list             : list,
+    parseGalleryAlbum: parseGalleryAlbum
 };
 
 function afterDelete(req, res) {
@@ -32,6 +33,30 @@ function afterDelete(req, res) {
         },
         error  : error => console.error("Error finding related comments " + error.code + ": " + error.message)
     });
+}
+
+function parseGalleryAlbum(item) {
+    let obj = {};
+    if (item) {
+        obj = {
+            id           : item.id,
+            _id          : item.id,
+            title        : item.get('title'),
+            description  : item.get('description'),
+            commentsTotal: item.get('qtyPhotos'),
+            image        : item.get('image'),
+            imageThumb   : item.get('imageThumb'),
+            privacity    : item.get('privacity'),
+            user         : {},
+            createdAt    : item.createdAt,
+        }
+    }
+
+    //if (item.get('user')) {
+    //    obj.user = User.parseUser(item.get('user'))
+    //}
+
+    return obj;
 }
 
 

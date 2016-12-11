@@ -22,8 +22,23 @@ module.exports = {
     isGalleryLiked: isGalleryLiked,
     likeGallery   : likeGallery,
     parseGallery  : parseGallery,
+    updateGallery : updateGallery,
     destroyGallery: destroyGallery,
 };
+
+function updateGallery(req, res) {
+    const user   = req.user;
+    const params = req.params;
+
+    get(params.id).then(gallery => {
+        let attributes = req.params;
+        delete attributes.id;
+        _.each(attributes, (value, key) => {
+            if (value) gallery.set(key, value);
+        });
+        gallery.save().then(res.success).catch(res.error);
+    })
+}
 
 function parseGallery(item) {
     let obj = {};
@@ -32,10 +47,13 @@ function parseGallery(item) {
             id           : item.id,
             _id          : item.id,
             title        : item.get('title'),
+            album        : require('./../class/GalleryAlbum').parseGalleryAlbum(item.get('album')),
+            albumId      : item.get('albumId'),
             commentsTotal: item.get('commentsTotal'),
             likesTotal   : item.get('likesTotal'),
             image        : item.get('image'),
             imageThumb   : item.get('imageThumb'),
+            privacity    : item.get('privacity'),
             isLiked      : false,
             comments     : [],
             user         : {},
@@ -51,67 +69,58 @@ function parseGallery(item) {
 }
 
 function beforeSave(req, res) {
-    const gallery = req.object;
-    const user    = req.user || req.object.get('user');
+    const object = req.object;
+    const user   = req.user || req.object.get('user');
 
+    console.log('before save', object);
     if (!user) {
         return res.error('Not Authorized');
     }
 
-    //if (gallery.existed()) {
-    //    if (!req.user) {
-    //        return res.error('Not Authorized');
-    //    }
-    //}
-
-    if (!gallery.get('image')) {
+    if (!object.get('image')) {
         return res.error('Upload the first image');
     }
 
-    //if (!gallery.get('title')) {
-    //    return res.error('Need image title');
-    //}
-
-    if (!gallery.dirty('image')) {
+    if (!object.dirty('image')) {
         return res.success();
     }
 
     // Search Gallery
     //https://parse.com/docs/js/guide#performance-implement-efficient-searches
     let toLowerCase = w => w.toLowerCase();
-    var words       = gallery.get('title').split(/\b/);
+    var words       = object.get('title').split(/\b/);
     words           = _.map(words, toLowerCase);
     var stopWords   = ['the', 'in', 'and']
     words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
-    var hashtags    = gallery.get('title').match(/#.+?\b/g);
+    var hashtags    = object.get('title').match(/#.+?\b/g);
     hashtags        = _.map(hashtags, toLowerCase)
 
-    gallery.set('words', words);
-    gallery.set('hashtags', hashtags);
+    object.set('words', words);
+    object.set('hashtags', hashtags);
 
     // Resize Image
-    if (!gallery.existed()) {
-        let imageUrl = gallery.get('image').url();
+    if (!object.existed()) {
+        let imageUrl = object.get('image').url();
         console.log('Resize image', imageUrl);
 
         return Image.resize(imageUrl, 160, 160).then(base64 => {
             return Image.saveImage(base64);
         }).then(savedFile => {
-            gallery.set('imageThumb', savedFile);
+            object.set('imageThumb', savedFile);
 
-            gallery.increment('followersTotal', 0);
-            gallery.increment('followingsTotal', 0);
-            gallery.increment('likesTotal', 0);
-            gallery.increment('galleriesTotal', 0);
-            gallery.increment('commentsTotal', 0);
-            gallery.increment('views', 0);
+            object.increment('followersTotal', 0);
+            object.increment('followingsTotal', 0);
+            object.increment('likesTotal', 0);
+            object.increment('galleriesTotal', 0);
+            object.increment('commentsTotal', 0);
+            object.increment('views', 0);
 
             new Parse.Query('UserData').equalTo('user', user).first(MasterKey).then(profile => {
 
                 // Set default values
-                gallery.set('user', user);
-                gallery.set('isApproved', true);
-                gallery.set('profile', profile);
+                object.set('user', user);
+                object.set('isApproved', true);
+                object.set('profile', profile);
                 //gallery.setACL(new Parse.Parse.ACL(req.user));
                 return res.success();
             });
@@ -169,34 +178,38 @@ function afterSave(req) {
     const user    = req.user;
     const albumId = req.object.get('albumId');
 
-    if (req.object.existed()) {
-        return
-    }
+    console.log('aftersave', albumId);
 
-    // Add Album Relation
     if (albumId) {
-        new Parse.Query('GalleryAlbum').get(albumId).then(album => {
-            let relation = album.relation('photos');
-            relation.add(req.object);
-            album.set('image', req.object.attributes.image);
-            album.set('imageThumb', req.object.attributes.imageThumb);
-            album.increment('qtyPhotos', 1);
-            album.save(null, MasterKey);
-            // Save Album Relation
-            req.object.set('album', album).save();
-        });
+        new Parse.Query('GalleryAlbum')
+            .equalTo('objectId', albumId)
+            .first(MasterKey)
+            .then(album => {
+                req.object.set('album', album);
+                req.object.save();
+
+                // Relation Photo with Album
+                let relation = album.relation('photos');
+                relation.add(req.object);
+                album.set('image', req.object.get('image'));
+                album.set('imageThumb', req.object.get('imageThumb'));
+                album.increment('qtyPhotos', 1);
+                album.save(MasterKey);
+            });
     }
 
-    // Activity
-    let activity = {
-        action  : 'addPhoto',
-        fromUser: user,
-        toUser  : req.object.user,
-        gallery : req.object
-    };
+    if (!req.object.existed()) {
+        // Activity
+        let activity = {
+            action  : 'addPhoto',
+            fromUser: user,
+            toUser  : req.object.user,
+            gallery : req.object
+        };
 
-    User.incrementGallery(user);
-    GalleryActivity.create(activity);
+        User.incrementGallery(user);
+        GalleryActivity.create(activity);
+    }
 }
 
 function getGallery(req, res) {
@@ -580,7 +593,7 @@ function isGalleryLiked(req, res, next) {
 }
 
 function destroyGallery(req, res) {
-    get(req.param.id).then(gallery => {
-        gallery.destroy().then(res.success).catch(res.reject);
-    });
+    new Parse.Query('Gallery').get(req.params.id).then(gallery => {
+        gallery.destroy(MasterKey).then(res.success).catch(res.reject);
+    }).catch(res.reject);
 }

@@ -7,7 +7,7 @@ const MasterKey   = {useMasterKey: true};
 
 module.exports = {
     get              : get,
-    getChatChannel   : getChatChannel,
+    getChatChannels  : getChatChannels,
     createChatChannel: createChatChannel,
 };
 
@@ -17,9 +17,8 @@ function get(objectId) {
 }
 
 function createChatChannel(req, res) {
-    const user    = req.user;
-    const users   = req.params.users;
-    const message = req.params.message;
+    const user  = req.user;
+    const users = req.params.users;
 
     if (!user) {
         return res.error('Not Authorized');
@@ -47,8 +46,50 @@ function createChatChannel(req, res) {
 
 }
 
-
 function getChatChannel(req, res) {
+    console.log('get channel');
+    const user = req.user;
+
+    console.log('user', user);
+
+    get(req.params.channelId)
+        .then(_channel => {
+
+            let obj = {
+                id       : _channel.id,
+                createdAt: _channel.createdAt,
+                updatedAt: _channel.updatedAt,
+                profiles : [],
+                users    : [],
+                message  : null,
+                obj      : _channel
+            };
+            console.log('obj', obj);
+
+            _channel.relation('users').query().find(MasterKey).then(_users => {
+                obj.users = _.filter(_users, _user => user.id != _user.id);
+                obj.users = _.map(obj.users, user => require('../class/User').parseUser(user));
+
+                new Parse.Query(ChatMessage)
+                    .descending('createdAt')
+                    .equalTo('channel', _channel)
+                    .include('user')
+                    .first(MasterKey)
+                    .then(message => {
+                        if (message) {
+                            obj.message = message;
+                        }
+                        console.log('obj -- final', obj);
+
+                        res.success(obj)
+                    }).catch(res.error);
+
+            }, res.error);
+
+        }, res.error);
+}
+
+function getChatChannels(req, res) {
     console.log('get channel');
     const user = req.user;
 
@@ -72,6 +113,7 @@ function getChatChannel(req, res) {
             _.each(_data, _channel => {
                 let obj = {
                     id       : _channel.id,
+                    _id      : _channel.id,
                     createdAt: _channel.createdAt,
                     updatedAt: _channel.updatedAt,
                     profiles : [],
@@ -82,38 +124,29 @@ function getChatChannel(req, res) {
                 console.log('obj', obj);
 
                 _channel.relation('users').query().find(MasterKey).then(_users => {
-                    obj.users = _.filter(_users, _user => user.id != _user.id);
+                    //obj.users = _.filter(_users, _user => user.id != _user.id);
+                    obj.users = _.map(_users, user => require('../class/User').parseUser(user));
 
-                    let promises = _.map(obj.users, user => new Parse.Query('UserData').equalTo('user', user)
-                                                                                       .first(MasterKey));
+                    new Parse.Query(ChatMessage)
+                        .descending('createdAt')
+                        .equalTo('channel', _channel)
+                        .include('user')
+                        .first(MasterKey)
+                        .then(message => {
+                            if (message) {
+                                obj.message   = message;
+                                obj.createdAt = message.createdAt;
+                            }
+                            console.log('obj -- final', obj);
+                            _result.push(obj);
+                            cb();
+                        }).catch(error => {
+                        console.log('not message', error);
+                        _result.push(obj);
+                        cb();
+                    }).catch(res.error);
 
-                    new Parse.Promise.when(promises).then(profiles => {
-                        obj.profiles = profiles;
-
-
-                        new Parse.Query(ChatMessage)
-                            .descending('createdAt')
-                            .equalTo('channel', _channel)
-                            .include('user')
-                            .first(MasterKey)
-                            .then(message => {
-                                if (message) {
-                                    obj.message = message;
-                                }
-                                console.log('obj -- final', obj);
-                                _result.push(obj);
-                                cb();
-                            }, error => {
-                                console.log('not message', error);
-                                _result.push(obj);
-                                cb();
-                            });
-
-                    }, res.error);
-
-                }, res.error);
-
+                }).catch(res.error);
             });
-
-        }, res.error);
+        }).catch(res.error);
 }
