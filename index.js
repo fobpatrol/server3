@@ -35,20 +35,19 @@ let ServerConfig = {
     appId           : APP_ID,
     masterKey       : MASTER_KEY,
     serverURL       : SERVER_URL,
-    restAPIKey      : MASTER_REST_KEY,
     publicServerURL : SERVER_URL,
     appName         : APP_NAME,
     verifyUserEmails: false,
     // enableAnonymousUsers    : true,
     // allowClientClassCreation: true,
-    maxUploadSize   : '10mb',
+    maxUploadSize   : '20mb',
     liveQuery       : {
-        classNames: ['ChatChannel', 'ChatMessage'],
+        classNames: ['ChatChannel', 'ChatMessage', 'GalleryComment'],
     },
 };
 
 // Redis
-if(REDIS_URL) {
+if (REDIS_URL) {
     ServerConfig.liveQuery['redisURL'] = REDIS_URL;
 }
 
