@@ -14,7 +14,6 @@ const DATABASE_URI    = process.env.MONGO_URL || process.env.DATABASE_URI || pro
 const SERVER_URL      = process.env.SERVER_URL || 'http://localhost:1337/parse';
 const APP_ID          = process.env.APP_ID || 'myAppId';
 const MASTER_KEY      = process.env.MASTER_KEY || 'myMasterKey';
-const MASTER_REST_KEY = process.env.MASTER_REST_KEY || 'myRestApiKey';
 const APP_NAME        = process.env.APP_NAME || 'parseApp';
 const PARSE_MOUNT     = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';

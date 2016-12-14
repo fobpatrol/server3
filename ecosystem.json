@@ -27,7 +27,6 @@
         // (required) - The master key to use for overriding ACL security.
         // You can use any arbitrary string. Keep it secret! For migrated apps, this should match your hosted Parse app.
         "MASTER_KEY": "myMasterKey",
-        "MASTER_REST_KEY": "myMasterRestKey",
 
         // Files save in Folder
         //"UPLOAD_LOCAL_PATH": "/storage",
