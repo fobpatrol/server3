@@ -10,6 +10,10 @@ const ChatMessage     = require('./class/ChatMessage');
 const Dashboard       = require('./class/Dashboard');
 const Push            = require('./class/Push');
 
+// Parse Push Android
+let PUSH_ANDROID_SENDER  = process.env.PUSH_ANDROID_SENDER;
+let PUSH_ANDROID_API_KEY = process.env.PUSH_ANDROID_API_KEY;
+
 // Push
 Parse.Cloud.define('verifyServerConnection', Push.verifyServerConnection);
 Parse.Cloud.define('pushText', Push.pushText);
@@ -27,14 +31,22 @@ Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 // Chat Message
 Parse.Cloud.define('createMessage', ChatMessage.createMessage);
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
-Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
+
+// If the push is set
+if (PUSH_ANDROID_API_KEY && PUSH_ANDROID_SENDER) {
+    Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
+}
 
 // Admin Dashboard
 Parse.Cloud.define('dashboard', Dashboard.home);
 
 // GalleryActivity
 Parse.Cloud.define('feedActivity', GalleryActivity.feed);
-Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
+
+// If the push is set
+if (PUSH_ANDROID_API_KEY && PUSH_ANDROID_SENDER) {
+    Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
+}
 
 // User
 Parse.Cloud.beforeSave(Parse.User, User.beforeSave);

@@ -14,7 +14,7 @@ function resize(url, width, height) {
 
         var imageResized = image.crop(x, y, size, size).resize(width, height).quality(60);
         return imageResized.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-            var base64 = buffer.toString('base64');
+            let base64 = buffer.toString('base64');
             return new Parse.Promise.as(base64);
         })
     }).catch(err=> {
@@ -24,6 +24,18 @@ function resize(url, width, height) {
             code   : 200
         });
     });
+}
+
+function progressive(image){
+    new Promise((resolve,reject)=>{
+        image.blur(50).quality(50,  (err, image) => {
+            if(err) {
+                reject(err)
+            } else {
+                resolve(image)
+            };
+        });
+    })
 }
 
 function saveImage(base64) {
