@@ -2,6 +2,7 @@
 const _           = require('lodash');
 const ChatChannel = require('./ChatChannel');
 const ParseObject = Parse.Object.extend('ChatMessage');
+const User        = require('./User');
 const UserData    = Parse.Object.extend('UserData');
 const MasterKey   = {useMasterKey: true};
 
@@ -28,6 +29,7 @@ function createMessage(req, res) {
 function get(objectId) {
     return new Parse.Query(ParseObject).get(objectId);
 }
+
 function afterSave(req, res) {
     const channel = req.object.get('channel');
     const user    = req.user;
@@ -35,29 +37,45 @@ function afterSave(req, res) {
     // Trim our message to 140 characters.
     const message = req.object.get('message').substring(0, 140);
 
+    // Create message to push
+    let dataMessage = {
+        title          : user.get('name'),
+        alert          : message,
+        badge          : 'Increment',
+        event          : 'chat',
+        chat           : channel.id,
+        icon           : 'icon.png',
+        iconColor      : '#045F54',
+        uri            : 'https://photogram.codevibe.io/chat/' + channel.id,
+        AnotherActivity: true
+    };
+
+    // Get user sent
+    let photo = user.get('photo');
+
+    // Get photo user
+    if (photo) {
+        dataMessage.image = photo.url();
+    }
+
+    // Send messages
     channel.relation('users')
            .query()
-           .find(MasterKey).then(users => _.filter(users, _user => user.id != _user.id).map(sendMessage));
+           .find(MasterKey)
+           .then(users => _.filter(users, _user => user.id != _user.id).map(sendMessage));
+
 
     function sendMessage(toUser) {
 
         let pushMessage = {
             channels: [toUser.get('username')],
-            data    : {
-                title: user.get('name'),
-                alert: message,
-                badge: 'Increment',
-                event: 'chat',
-                chat : channel.id,
-                uri  : 'https://photogram.codevibe.io/chat/' + channel.id,
-            }
+            data    : dataMessage
         };
 
-        //console.log(pushMessage);
+        console.log(pushMessage);
+        console.log('dataMessage', dataMessage);
 
-        Parse.Push.send(pushMessage, {
-            useMasterKey: true
-        }).then(() => {
+        Parse.Push.send(pushMessage, MasterKey).then(() => {
             console.log('push sent. args received: ' + JSON.stringify(arguments) + '\n');
             res.success({
                 status: 'push sent',

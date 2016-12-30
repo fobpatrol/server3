@@ -52,6 +52,7 @@ function parseGallery(item) {
             commentsTotal: item.get('commentsTotal'),
             likesTotal   : item.get('likesTotal'),
             image        : item.get('image'),
+            imageLow     : item.get('imageLow') || item.get('image'),
             imageThumb   : item.get('imageThumb'),
             privacity    : item.get('privacity'),
             isLiked      : false,
@@ -103,10 +104,20 @@ function beforeSave(req, res) {
         let imageUrl = object.get('image').url();
         console.log('Resize image', imageUrl);
 
-        return Image.resize(imageUrl, 160, 160).then(base64 => {
-            return Image.saveImage(base64);
-        }).then(savedFile => {
-            object.set('imageThumb', savedFile);
+        // cover
+        // progressive
+        // thumb
+
+        Parse.Promise.when([
+            Image.resize(imageUrl, 640).then(image => Image.saveImage(image)),
+            Image.progressive(imageUrl, 640).then(image => Image.saveImage(image)),
+            Image.resize(imageUrl, 160).then(image => Image.saveImage(image)),
+        ]).then(parseFile => {
+            console.log(parseFile);
+
+            object.set('image', parseFile[0]);
+            object.set('imageLow', parseFile[1]);
+            object.set('imageThumb', parseFile[2]);
 
             object.increment('followersTotal', 0);
             object.increment('followingsTotal', 0);
@@ -460,7 +471,6 @@ function feed(req, res) {
 
 
     function runQuery() {
-        console.log('runQuery');
 
         _query
             .equalTo('isApproved', true)
@@ -471,6 +481,10 @@ function feed(req, res) {
             .find(MasterKey)
             .then(_data => {
                 let _result = [];
+
+                if (!_data || !_data.length) {
+                    res.success([]);
+                }
 
                 let cb = _.after(_data.length, () => res.success(_result));
 

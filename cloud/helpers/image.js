@@ -1,43 +1,64 @@
 'use strict';
-const Jimp = require('jimp');
+const sharp   = require('sharp');
 
 module.exports = {
-    resize   : resize,
-    saveImage: saveImage
+    resize        : resize,
+    saveImage     : saveImage,
+    progressive   : progressive,
+    base64toBuffer: base64toBuffer,
 };
 
-function resize(url, width, height) {
-    return Jimp.read(url).then((image) => {
-        const size = Math.min(image.bitmap.width, image.bitmap.height);
-        const x    = (image.bitmap.width - size) / 2;
-        const y    = (image.bitmap.height - size) / 2;
+function base64toBuffer(base64) {
+    return new Buffer.from(base64, 'base64').toString('ascii');
+}
 
-        var imageResized = image.crop(x, y, size, size).resize(width, height).quality(60);
-        return imageResized.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-            let base64 = buffer.toString('base64');
-            return new Parse.Promise.as(base64);
+function bufferToBase64(buffer) {
+    console.log('converte buffer', buffer);
+    return buffer.toString('base64');
+}
+
+function resize(url, width) {
+    return new Promise((resolve, reject) => {
+        Parse.Cloud.httpRequest({url: url}).then(body => {
+            sharp(body.buffer)
+                .resize(width)
+                .embed()
+                .raw()
+                .webp({quality: 90})
+                .toFormat(sharp.format.webp)
+                .toBuffer((error, buffer) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(bufferToBase64(buffer))
+                    }
+                });
         })
-    }).catch(err=> {
-        console.log('Resize error', err);
-        return Parse.Promise.error({
-            message: 'Unable to read image',
-            code   : 200
-        });
     });
 }
 
-function progressive(image){
-    new Promise((resolve,reject)=>{
-        image.blur(50).quality(50,  (err, image) => {
-            if(err) {
-                reject(err)
-            } else {
-                resolve(image)
-            };
-        });
-    })
+
+function progressive(url, width) {
+    return new Promise((resolve, reject) => {
+        Parse.Cloud.httpRequest({url: url}).then(body => {
+            sharp(body.buffer)
+                .resize(width)
+                .embed()
+                .raw()
+                .blur(20)
+                .webp({quality: 80})
+                .toFormat(sharp.format.webp)
+                .toBuffer((error, buffer) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(bufferToBase64(buffer))
+                    }
+                });
+        })
+    });
 }
 
 function saveImage(base64) {
-     return new Parse.File('image.jpg', {base64: base64}).save();
+    return new Parse.File('image.webp', {base64: base64}).save();
 }

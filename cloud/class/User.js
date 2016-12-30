@@ -74,7 +74,7 @@ function beforeSave(req, res) {
 
     if (user.get('photo') && user.get('photo').url()) {
         let imageUrl = user.get('photo').url();
-        Image.resize(imageUrl, 160, 160)
+        Image.resize(imageUrl, 160)
              .then(base64 => Image.saveImage(base64))
              .then(savedFile => {
                  user.set('photo', savedFile);
