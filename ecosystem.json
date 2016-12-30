@@ -9,7 +9,7 @@
       "script": "index.js",
       "watch": false,
       "merge_logs": true,
-      "ignore_watch" : ["node_modules", "logs","tmp",".git"],
+      "ignore_watch" : ["node_modules", "logs","tmp",".git","storage",".idea","yarn.*"],
       "env": {
         // Mount path for the server. Defaults to /parse.
         "PARSE_MOUNT": "/parse",
