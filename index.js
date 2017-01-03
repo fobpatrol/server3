@@ -1,6 +1,5 @@
 'use strict';
 const express        = require('express');
-const cors           = require('cors');
 const ParseServer    = require('parse-server').ParseServer;
 const expressLayouts = require('express-ejs-layouts');
 const path           = require('path');
@@ -120,9 +119,6 @@ if (MAILGUN_API_KEY) {
 // Start Parse Server
 const api = new ParseServer(ServerConfig);
 const app = express();
-
-// Cors
-app.use(cors());
 
 // EJS Template
 app.set('view engine', 'ejs');
