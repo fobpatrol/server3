@@ -1,7 +1,6 @@
 'use strict';
 const express        = require('express');
 const ParseServer    = require('parse-server').ParseServer;
-const expressLayouts = require('express-ejs-layouts');
 const path           = require('path');
 const ParseDashboard = require('parse-dashboard');
 const FSFilesAdapter = require('parse-server-fs-adapter');
@@ -51,14 +50,12 @@ if (REDIS_URL) {
 
 // Push Android
 if (PUSH_ANDROID_SENDER) {
-    ServerConfig.push({
-        push: {
+    ServerConfig.push =  {
             android: {
                 senderId: PUSH_ANDROID_SENDER,
                 apiKey  : PUSH_ANDROID_API_KEY
             }
         }
-    })
 }
 
 // File Local
@@ -120,16 +117,12 @@ if (MAILGUN_API_KEY) {
 const api = new ParseServer(ServerConfig);
 const app = express();
 
-// EJS Template
-app.set('view engine', 'ejs');
-app.set('views', 'views');
 
 // Serve the Parse API on the /parse URL prefix
 const mountPath = PARSE_MOUNT;
 app.use(mountPath, api);
 
-app.use(express.static('views'));
-app.use(expressLayouts);
+app.use(express.static('www'));
 
 app.use((req, res, next) => {
     res.locals.appId     = APP_ID;
