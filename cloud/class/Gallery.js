@@ -221,16 +221,7 @@ function afterSave(req) {
     }
 
     if (!req.object.existed()) {
-        // Activity
-        let activity = {
-            action:   'addPhoto',
-            fromUser: user,
-            toUser:   req.object.user,
-            gallery:  req.object
-        };
-
-        User.incrementGallery(user);
-        GalleryActivity.create(activity);
+        User.incrementGallery(req.object.get('user'));
     }
 }
 
@@ -605,8 +596,8 @@ function isGalleryLiked(req, res, next) {
         .then(gallery => res.success(gallery ? true : false), res.error);
 }
 
-function destroyGallery (req, res) {
-  new Parse.Query('Gallery').get(req.params.id).then(gallery => {
-    gallery.destroy(MasterKey).then(res.success).catch(res.reject);
-  }).catch(res.reject);
+function destroyGallery(req, res) {
+    new Parse.Query('Gallery').get(req.params.id).then(gallery => {
+        gallery.destroy(MasterKey).then(res.success).catch(res.reject);
+    }).catch(res.reject);
 }
