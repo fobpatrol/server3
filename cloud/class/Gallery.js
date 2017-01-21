@@ -186,11 +186,8 @@ function afterDelete(req, res) {
         deleteComments
     ];
 
-    if (req.object.album) {
-        let decrementAlbum = new Parse.Query('GalleryAlbum').equalTo('objectId', req.object.album.id)
-            .first(MasterKey).then(galleryAlbum => {
-                return galleryAlbum.increment('qtyPhotos', -1).save(null, MasterKey);
-            });
+    if (req.object.get('album')) {
+        let decrementAlbum = new Parse.Query('GalleryAlbum').equalTo('objectId', req.object.get('album').id).first(MasterKey).then(galleryAlbum => galleryAlbum.increment('qtyPhotos', -1).save(null, MasterKey));
         promises.push(decrementAlbum);
     }
 
