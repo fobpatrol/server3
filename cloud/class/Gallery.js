@@ -162,7 +162,7 @@ function afterDelete(req, res) {
         let promises = [];
         _.each(results, result => {
             promises.push(result.destroy());
-            User.decrementComment();
+            User.decrementComment(req.user);
         });
         // Return a new promise that is resolved when all of the deletes are finished.
         return Parse.Promise.when(promises);
