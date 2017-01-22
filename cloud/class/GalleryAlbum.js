@@ -8,10 +8,10 @@ const MasterKey       = {useMasterKey: true};
 
 
 module.exports = {
-    beforeSave       : beforeSave,
-    afterSave        : afterSave,
-    afterDelete      : afterDelete,
-    list             : list,
+    beforeSave:        beforeSave,
+    afterSave:         afterSave,
+    afterDelete:       afterDelete,
+    list:              list,
     parseGalleryAlbum: parseGalleryAlbum
 };
 
@@ -27,11 +27,12 @@ function afterDelete(req, res) {
 
             // Remove all Photos
             Parse.Object.destroyAll(items, {
-                success: () => {},
-                error  : error => console.error("Error deleting related comments " + error.code + ": " + error.message)
+                success: () => {
+                },
+                error:   error => console.error('Error deleting related comments ' + error.code + ': ' + error.message)
             });
         },
-        error  : error => console.error("Error finding related comments " + error.code + ": " + error.message)
+        error:   error => console.error('Error finding related comments ' + error.code + ': ' + error.message)
     });
 }
 
@@ -39,16 +40,26 @@ function parseGalleryAlbum(item) {
     let obj = {};
     if (item) {
         obj = {
-            id           : item.id,
-            _id          : item.id,
-            title        : item.get('title'),
-            description  : item.get('description'),
-            commentsTotal: item.get('qtyPhotos'),
-            image        : item.get('image'),
-            imageThumb   : item.get('imageThumb'),
-            privacity    : item.get('privacity'),
-            user         : {},
-            createdAt    : item.createdAt,
+            id:            item.id,
+            _id:           item.id,
+            title:         item.get('title'),
+            description:   item.get('description'),
+            image:         item.get('image'),
+            imageThumb:    item.get('imageThumb'),
+            privacity:     item.get('privacity'),
+            qtyPhotos:     item.get('qtyPhotos'),
+            commentsTotal: item.get('commentsTotal'),
+            createdAt:     item.createdAt,
+            user:          {}
+        };
+
+        if (item.get('user')) {
+            obj.user = {
+                id:       item.get('user').id,
+                name:     item.get('user').get('name'),
+                username: item.get('user').get('username'),
+                photo:    item.get('user').get('photo'),
+            };
         }
     }
 
@@ -76,10 +87,10 @@ function beforeSave(req, res) {
     let toLowerCase = w => w.toLowerCase();
     var words       = gallery.get('title').split(/\b/);
     words           = _.map(words, toLowerCase);
-    var stopWords   = ['the', 'in', 'and']
+    var stopWords   = ['the', 'in', 'and'];
     words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
     var hashtags    = gallery.get('title').match(/#.+?\b/g);
-    hashtags        = _.map(hashtags, toLowerCase)
+    hashtags        = _.map(hashtags, toLowerCase);
 
     gallery.set('words', words);
     gallery.set('hashtags', hashtags);
@@ -97,14 +108,14 @@ function afterSave(req) {
     const user = req.user;
 
     if (req.object.existed()) {
-        return
+        return;
     }
 
     let activity = {
-        action  : 'addAlbum',
+        action:   'addAlbum',
         fromUser: user,
-        toUser  : req.object.user,
-        album   : req.object
+        toUser:   req.object.user,
+        album:    req.object
     };
     User.incrementAlbumGallery(user);
     GalleryActivity.create(activity);
@@ -134,27 +145,27 @@ function list(req, res, next) {
             .skip((_page * _limit) - _limit)
             .equalTo('user', user)
             .find(MasterKey)
-            .then(data => data.map(parseAlbum))
+            .then(data => data.map(parseGalleryAlbum))
             .then(res.success)
-            .catch(error => res.error(error.message))
+            .catch(error => res.error(error.message));
     }
 }
 
 function parseAlbum(item) {
     return {
-        id         : item.id,
-        _id        : item.id,
-        image      : item.get('image'),
-        imageThumb : item.get('imageThumb'),
-        title      : item.get('title'),
+        id:          item.id,
+        _id:         item.id,
+        image:       item.get('image'),
+        imageThumb:  item.get('imageThumb'),
+        title:       item.get('title'),
         description: item.get('description'),
-        qtyPhotos  : item.get('qtyPhotos') || 0,
-        createdAt  : item.createdAt,
-        user       : {
-            id      : item.get('user').id,
-            name    : item.get('user').get('name'),
+        qtyPhotos:   item.get('qtyPhotos') || 0,
+        createdAt:   item.createdAt,
+        user:        {
+            id:       item.get('user').id,
+            name:     item.get('user').get('name'),
             username: item.get('user').get('username'),
-            photo   : item.get('user').get('photo'),
+            photo:    item.get('user').get('photo'),
         }
     };
 }

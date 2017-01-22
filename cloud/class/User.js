@@ -30,8 +30,7 @@ module.exports = {
     getFollowing:          getFollowing,
     validateUsername:      validateUsername,
     validateEmail:         validateEmail,
-    incrementGallery:      incrementGallery,
-    decrementGallery:      decrementGallery,
+    updateGalleriesTotal:  updateGalleriesTotal,
     incrementFollowers:    incrementFollowers,
     incrementFollowing:    incrementFollowing,
     incrementComment:      incrementComment,
@@ -583,15 +582,18 @@ function listUsers(req, res, next) {
             _query.containsAll('words', [words]);
         }
     }
+    console.log('part 1');
 
     _query
         .descending('createdAt')
         .notContainedIn('objectId', [req.user.id])
+        .notContainedIn('roleName', ['admin','Admin'])
         .limit(_limit)
         .skip((_page * _limit) - _limit)
         .find(MasterKey)
         .then(data => {
 
+            console.log('part 1');
             let _result = [];
             // If none result
             if (!data.length) res.success(_result);
@@ -614,8 +616,7 @@ function listUsers(req, res, next) {
                             .then(galleries => {
                                 let profile       = parseUser(user);
                                 profile.isFollow  = isFollow ? true : false;
-                                profile.galleries = galleries.map(item => require('../class/Gallery')
-                                    .parseGallery(item));
+                                profile.galleries = galleries.map(item => require('../class/Gallery').parseGallery(item));
                                 _result.push(profile);
                                 cb();
                             }).catch(res.error);
@@ -757,12 +758,8 @@ function decrementAlbumGallery(user) {
 }
 
 // Gallery
-function incrementGallery(user) {
-    return getUserData(user).then(user => user.increment('galleriesTotal').save(null, MasterKey));
-}
-
-function decrementGallery(user) {
-    return getUserData(user).then(user => user.increment('galleriesTotal', -1).save(null, MasterKey));
+function updateGalleriesTotal(user, galleriesTotal) {
+    return getUserData(user).then(userData => userData.set('galleriesTotal', galleriesTotal).save(null, MasterKey));
 }
 
 //seguidores

@@ -50,11 +50,28 @@ function updateGallery(req, res) {
     get(params.id).then(gallery => {
         let attributes = req.params;
         delete attributes.id;
+
         _.each(attributes, (value, key) => {
             if (value) gallery.set(key, value);
         });
+
+        if (attributes['address'] && attributes['address']['geo']) {
+            gallery.set('location', new Parse.GeoPoint(params.address['geo']));
+        }
         gallery.save().then(res.success).catch(res.error);
     });
+}
+
+function countGalleriesTotal(user) {
+    return new Parse.Query('Gallery').equalTo('user', user).count(MasterKey);
+}
+
+function countAlbumTotal(album) {
+    return new Parse.Query('Gallery').equalTo('album', album).count(MasterKey);
+}
+
+function countCommentsTotal(gallery) {
+    return new Parse.Query('GalleryComment').equalTo('gallery', gallery).count(MasterKey);
 }
 
 function parseGallery(item) {
@@ -64,6 +81,7 @@ function parseGallery(item) {
             id:            item.id,
             _id:           item.id,
             title:         item.get('title'),
+            address:       item.get('address'),
             album:         require('./../class/GalleryAlbum').parseGalleryAlbum(item.get('album')),
             albumId:       item.get('albumId'),
             commentsTotal: item.get('commentsTotal'),
@@ -157,6 +175,9 @@ function beforeSave(req, res) {
 }
 
 function afterDelete(req, res) {
+
+    const user = req.object.get('user');
+
     let deleteComments = new Parse.Query('GalleryComment').equalTo('gallery', req.object).find().then(results => {
         // Collect one promise for each delete into an array.
         let promises = [];
@@ -174,7 +195,6 @@ function afterDelete(req, res) {
         let promises = [];
         _.each(results, result => {
             promises.push(result.destroy());
-            User.decrementGallery();
         });
         // Return a new promise that is resolved when all of the deletes are finished.
         return Parse.Promise.when(promises);
@@ -183,7 +203,8 @@ function afterDelete(req, res) {
 
     let promises = [
         deleteActivity,
-        deleteComments
+        deleteComments,
+        countGalleriesTotal(user).then(galleriesTotal => User.updateGalleriesTotal(user, galleriesTotal))
     ];
 
     if (req.object.get('album')) {
@@ -196,7 +217,7 @@ function afterDelete(req, res) {
 }
 
 function afterSave(req) {
-    const user    = req.user;
+    const user    = req.object.get('user');
     const albumId = req.object.get('albumId');
 
     if (albumId) {
@@ -206,20 +227,26 @@ function afterSave(req) {
             .then(album => {
                 req.object.set('album', album);
                 req.object.save();
-
                 // Relation Photo with Album
                 let relation = album.relation('photos');
                 relation.add(req.object);
+
+                // Total Album photos
                 album.set('image', req.object.get('image'));
                 album.set('imageThumb', req.object.get('imageThumb'));
-                album.increment('qtyPhotos', 1);
-                album.save(MasterKey);
+
+                countAlbumTotal(album).then(qtyPhotos => {
+                    album.set('qtyPhotos', qtyPhotos);
+                    album.save(MasterKey);
+                });
             });
     }
 
-    if (!req.object.existed()) {
-        User.incrementGallery(req.object.get('user'));
-    }
+    //if (!req.object.existed()) {
+    // Update galleriesTotal
+    countGalleriesTotal(user).then(galleriesTotal => User.updateGalleriesTotal(user, galleriesTotal));
+
+    //}
 }
 
 function getGallery(req, res) {
@@ -438,7 +465,7 @@ function feed(req, res) {
                     let following = [];
                     _.map(users, userFollow => {
                         let user = userFollow.get('to');
-                        if (!_.some(following, {id: user.id})) {
+                        if (user && !_.some(following, {id: user['id']})) {
                             following.push(user);
                         }
                     });
