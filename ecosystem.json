@@ -29,7 +29,7 @@
         "MASTER_KEY": "myMasterKey",
 
         // Files save in Folder
-        //"UPLOAD_LOCAL_PATH": "/storage",
+        //,"UPLOAD_LOCAL_PATH": "/storage"
 
         // Parse Dashboard
         "DASHBOARD_URL": "/dashboard",
@@ -40,22 +40,19 @@
         // (optional) - S3 for Storage Files
         // Files are hosted via automaticamentes GridStore Adapter in MongoDB
         // If you want to host the files on S3 fill in the form below
-//        "AWS_ACCESS_KEY_ID": "",
-//        "AWS_SECRET_ACCESS_KEY": "",
-//        "BUCKET_NAME": "",
+//        ,"AWS_ACCESS_KEY_ID": ""
+//        ,"AWS_SECRET_ACCESS_KEY": ""
+//        ,"BUCKET_NAME": ""
 
         // (optional) - MAILGUN for send Email
-//        "MAILGUN_API_KEY": "",
-//        "MAILGUN_DOMAIN": "",
-//        "MAILGUN_FROM_ADDRESS": "",
+//        ,"MAILGUN_API_KEY": ""
+//        ,"MAILGUN_DOMAIN": ""
+//        ,"MAILGUN_FROM_ADDRESS": ""
 
-        // Push Notification
-//        "PUSH": {
-//          "android": {
-//            "senderId": "",
-//            "apiKey": ""
-//          }
-//        }
+        // Firebase Push Notification
+      //  ,"FIREBASE_API_KEY":""
+      //  ,"FIREBASE_SENDER_KEY": ""
+
       }
     }
   ]

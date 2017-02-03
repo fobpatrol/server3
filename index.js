@@ -18,8 +18,8 @@ const CLOUD_CODE_MAIN = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.
 const REDIS_URL       = process.env.REDIS_URL;
 
 // Parse Push Android
-let PUSH_ANDROID_SENDER  = process.env.PUSH_ANDROID_SENDER;
-let PUSH_ANDROID_API_KEY = process.env.PUSH_ANDROID_API_KEY;
+let FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
+let FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
 
 // Database Ecosystem file
 if (!DATABASE_URI) {
@@ -49,11 +49,11 @@ if (REDIS_URL) {
 }
 
 // Push Android
-if (PUSH_ANDROID_SENDER) {
+if (FIREBASE_API_KEY && FIREBASE_SENDER_KEY) {
     ServerConfig.push =  {
             android: {
-                senderId: PUSH_ANDROID_SENDER,
-                apiKey  : PUSH_ANDROID_API_KEY
+                senderId: FIREBASE_API_KEY,
+                apiKey  : FIREBASE_SENDER_KEY
             }
         }
 }
@@ -70,7 +70,7 @@ if (UPLOAD_LOCAL_PATH) {
 const AWS_ACCESS_KEY_ID     = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 const BUCKET_NAME           = process.env.BUCKET_NAME;
-if (AWS_ACCESS_KEY_ID) {
+if (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && BUCKET_NAME ) {
     ServerConfig.filesAdapter = new S3Adapter(
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
