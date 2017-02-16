@@ -2,6 +2,7 @@
 const Install         = require('./class/Install');
 const User            = require('./class/User');
 const Gallery         = require('./class/Gallery');
+const GalleryBookmark = require('./class/GalleryBookmark');
 const GalleryAlbum    = require('./class/GalleryAlbum');
 const GalleryActivity = require('./class/GalleryActivity');
 const GalleryComment  = require('./class/GalleryComment');
@@ -11,8 +12,8 @@ const Dashboard       = require('./class/Dashboard');
 const Push            = require('./class/Push');
 
 // Parse Push Android
-let FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
-let FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
+let PUSH_ANDROID_SENDER  = process.env.PUSH_ANDROID_SENDER;
+let PUSH_ANDROID_API_KEY = process.env.PUSH_ANDROID_API_KEY;
 
 
 // Push
@@ -33,8 +34,8 @@ Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 Parse.Cloud.define('createMessage', ChatMessage.createMessage);
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
 // If the push is set
-if (FIREBASE_API_KEY && FIREBASE_SENDER_KEY) {
-  Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
+if (PUSH_ANDROID_API_KEY && PUSH_ANDROID_SENDER) {
+    Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
 }
 
 
@@ -45,8 +46,8 @@ Parse.Cloud.define('dashboard', Dashboard.home);
 Parse.Cloud.define('feedActivity', GalleryActivity.feed);
 
 // If the push is set
-if (FIREBASE_API_KEY && FIREBASE_SENDER_KEY) {
-  Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
+if (PUSH_ANDROID_API_KEY && PUSH_ANDROID_SENDER) {
+    Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
 }
 
 // User
@@ -69,6 +70,7 @@ Parse.Cloud.define('destroyUser', User.destroyUser);
 Parse.Cloud.define('saveFacebookPicture', User.saveFacebookPicture);
 Parse.Cloud.define('validateUsername', User.validateUsername);
 Parse.Cloud.define('validateEmail', User.validateEmail);
+Parse.Cloud.define('updateAvatar', User.updateAvatar);
 
 // Gallery Album
 Parse.Cloud.beforeSave('GalleryAlbum', GalleryAlbum.beforeSave);
@@ -81,7 +83,6 @@ Parse.Cloud.beforeSave('Gallery', Gallery.beforeSave);
 Parse.Cloud.afterSave('Gallery', Gallery.afterSave);
 Parse.Cloud.afterDelete('Gallery', Gallery.afterDelete);
 Parse.Cloud.define('createGallery', Gallery.createGallery);
-Parse.Cloud.define('searchGallery', Gallery.search);
 Parse.Cloud.define('getAlbum', Gallery.getAlbum);
 Parse.Cloud.define('feedGallery', Gallery.feed);
 Parse.Cloud.define('commentGallery', Gallery.commentGallery);
@@ -90,6 +91,10 @@ Parse.Cloud.define('likeGallery', Gallery.likeGallery);
 Parse.Cloud.define('isGalleryLiked', Gallery.isGalleryLiked);
 Parse.Cloud.define('updateGallery', Gallery.updateGallery);
 Parse.Cloud.define('destroyGallery', Gallery.destroyGallery);
+
+//GalleryBookmark
+Parse.Cloud.define('galleryBookmark', GalleryBookmark.bookmarkGallery);
+Parse.Cloud.define('feedGalleryBookmark', GalleryBookmark.feed);
 
 // GalleryComment
 Parse.Cloud.beforeSave('GalleryComment', GalleryComment.beforeSave);

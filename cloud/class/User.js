@@ -39,6 +39,7 @@ module.exports = {
     decrementAlbumGallery: decrementAlbumGallery,
     parseProfile:          parseProfile,
     parseUser:             parseUser,
+    updateAvatar:          updateAvatar,
 };
 
 function beforeSave(req, res) {
@@ -459,8 +460,6 @@ function profile(req, res) {
                 .then(isFollow => {
                     let profile      = parseProfile(toUser);
                     profile.isFollow = isFollow ? true : false;
-                    console.log('isFollow', isFollow);
-                    console.log('profile', profile);
                     res.success(profile);
                 }).catch(res.error);
         }).catch(res.error);
@@ -571,7 +570,8 @@ function listUsers(req, res, next) {
 
     let _query = new Parse.Query(Parse.User);
 
-    if (_params.search) {
+    let text = _params.search;
+    if (text && text.length > 0) {
         let toLowerCase = w => w.toLowerCase();
         var words       = _params.search.split(/\b/);
         words           = _.map(words, toLowerCase);
@@ -579,15 +579,16 @@ function listUsers(req, res, next) {
         words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
 
         if (words) {
-            _query.containsAll('words', [words]);
+            _query.containsAll('words', words);
         }
+
     }
     console.log('part 1');
 
     _query
         .descending('createdAt')
         .notContainedIn('objectId', [req.user.id])
-        .notContainedIn('roleName', ['admin','Admin'])
+        .notContainedIn('roleName', ['admin', 'Admin'])
         .limit(_limit)
         .skip((_page * _limit) - _limit)
         .find(MasterKey)
@@ -623,6 +624,18 @@ function listUsers(req, res, next) {
                     }).catch(res.error);
             });
         }).catch(res.error);
+}
+
+function updateAvatar(req, res) {
+    const params = req.params;
+    const user   = req.user;
+    const base64 = params.photo;
+
+    console.log('user', user);
+    Image.saveImage(base64).then(_photo => {
+        user.set('photo', _photo)
+        user.save(null, MasterKey).then(res.success).catch(res.error);
+    }).catch(res.error);
 }
 
 function updateUser(req, res, next) {
@@ -792,15 +805,17 @@ function parseUser(user) {
         name:            user.get('name'),
         email:           user.get('email'),
         username:        user.get('username'),
-        followersTotal:  user.get('followersTotal'),
-        followingsTotal: user.get('followingsTotal'),
-        galleriesTotal:  user.get('galleriesTotal'),
+        followersTotal:  user.get('followersTotal') || 0,
+        followingsTotal: user.get('followingsTotal') || 0,
+        galleriesTotal:  user.get('galleriesTotal') || 0,
         status:          user.get('status'),
-        photo:           user.get('photo'),
         isFollow:        false,
         galleries:       [],
         createdAt:       user.createdAt
     };
+    if (user.get('photo')) {
+        obj.photo = user.get('photo').url();
+    }
     return obj;
 }
 
@@ -816,11 +831,13 @@ function parseProfile(userData) {
             followingsTotal: userData.get('followingsTotal'),
             galleriesTotal:  userData.get('galleriesTotal'),
             status:          userData.get('status'),
-            photo:           userData.get('photo'),
             isFollow:        false,
             galleries:       [],
             createdAt:       userData.createdAt
         };
+        if (userData.get('photo')) {
+            obj.photo = userData.get('photo').url();
+        }
         return obj;
     }
 }

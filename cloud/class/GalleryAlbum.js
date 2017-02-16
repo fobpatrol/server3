@@ -44,14 +44,17 @@ function parseGalleryAlbum(item) {
             _id:           item.id,
             title:         item.get('title'),
             description:   item.get('description'),
-            image:         item.get('image'),
-            imageThumb:    item.get('imageThumb'),
             privacity:     item.get('privacity'),
             qtyPhotos:     item.get('qtyPhotos'),
             commentsTotal: item.get('commentsTotal'),
             createdAt:     item.createdAt,
             user:          {}
         };
+
+        if (item.get('image')) {
+            obj.image      = item.get('image').url();
+            obj.imageThumb = item.get('imageThumb').url();
+        }
 
         if (item.get('user')) {
             obj.user = {
