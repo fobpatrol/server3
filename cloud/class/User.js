@@ -2,9 +2,9 @@
 const _               = require('lodash');
 const Image           = require('../helpers/image');
 const GalleryActivity = require('../class/GalleryActivity');
+const UserData        = require('./UserData');
 const ParseObject     = Parse.Object.extend('User');
 const UserFollow      = Parse.Object.extend('UserFollow');
-const UserData        = Parse.Object.extend('UserData');
 const Gallery         = Parse.Object.extend('Gallery');
 const MasterKey       = {useMasterKey: true};
 
@@ -37,7 +37,6 @@ module.exports = {
     decrementComment:      decrementComment,
     incrementAlbumGallery: incrementAlbumGallery,
     decrementAlbumGallery: decrementAlbumGallery,
-    parseProfile:          parseProfile,
     parseUser:             parseUser,
     updateAvatar:          updateAvatar,
 };
@@ -73,20 +72,7 @@ function beforeSave(req, res) {
     words.push(user.get('username'));
     user.set('words', words);
 
-    if (user.get('photo') && user.get('photo').url()) {
-        let imageUrl = user.get('photo').url();
-        console.log(imageUrl);
-
-        Image.resizeUrl(imageUrl, 160)
-            .then(base64 => Image.saveImage(base64))
-            .then(savedFile => {
-                user.set('photo', savedFile);
-                res.success();
-            }).catch(error => res.success(error));
-
-    } else {
-        return res.success();
-    }
+    res.success();
 
 }
 
@@ -96,7 +82,7 @@ function afterSave(req, res) {
 
     console.log('user.existed', user.existed());
 
-    new Parse.Query('UserData').equalTo('user', user).first(MasterKey).then(userData => {
+    UserData.getByUser(user).then(userData => {
 
         if (userData) {
             userData.set('name', user.get('name'));
@@ -132,21 +118,18 @@ function afterSave(req, res) {
 
     if (!user.existed()) {
 
-        var query = new Parse.Query(Parse.Role);
-        query.equalTo('name', 'Admin');
-        query.equalTo('users', userRequesting);
-        query.first().then(function (isAdmin) {
+        new Parse.Query(Parse.Role)
+            .equalTo('name', 'Admin')
+            .equalTo('users', userRequesting)
+            .first().then(function (isAdmin) {
 
             if (!isAdmin && user.get('roleName') === 'Admin') {
                 return Parse.Promise.error(new Parse.Error(1, 'Not Authorized'));
             }
 
-            var roleName = user.get('roleName') || 'User';
-
-            var innerQuery = new Parse.Query(Parse.Role);
-            innerQuery.equalTo('name', roleName);
-            return innerQuery.first();
-        }).then(function (role) {
+            let roleName = user.get('roleName') || 'User';
+            return new Parse.Query(Parse.Role).equalTo('name', roleName).first();
+        }).then((role) => {
 
             if (!role) {
                 return Parse.Promise.error(new Parse.Error(1, 'Role not found'));
@@ -154,9 +137,9 @@ function afterSave(req, res) {
 
             role.getUsers().add(user);
             return role.save();
-        }).then(function () {
-            console.log(success);
-        }, function (error) {
+        }).then(() => {
+            console.log('success');
+        }).catch((error) => {
             console.error('Got an error ' + error.code + ' : ' + error.message);
         });
     }
@@ -208,7 +191,7 @@ function getLikers(req, res) {
                                     .find()
                                     .then(galleries => {
 
-                                        let profile       = parseProfile(userData);
+                                        let profile       = UserData.parseUserData(userData);
                                         profile.isFollow  = isFollow ? true : false;
                                         profile.galleries = galleries.map(item => Gallery.parseGallery(item));
                                         _result.push(profile);
@@ -261,7 +244,7 @@ function getFollowers(req, res) {
                                         .find()
                                         .then(galleries => {
 
-                                            let profile       = parseProfile(userData);
+                                            let profile       = UserData.parseUserData(userData);
                                             profile.isFollow  = isFollow ? true : false;
                                             profile.galleries = galleries.map(item => Gallery.parseGallery(item));
                                             console.log('profile', profile);
@@ -307,7 +290,7 @@ function getFollowers(req, res) {
                                 .find()
                                 .then(galleries => {
 
-                                    let profile       = parseProfile(userData);
+                                    let profile       = UserData.parseUserData(userData);
                                     profile.isFollow  = isFollow ? true : false;
                                     profile.galleries = galleries.map(item => Gallery.parseGallery(item));
                                     console.log('profile', profile);
@@ -343,12 +326,12 @@ function getFollowing(req, res) {
                     _.each(userFollows, userFollow => {
 
                         // User Data
-                        new Parse.Query(UserData)
+                        new Parse.Query('UserData')
                             .equalTo('user', userFollow.get('to'))
                             .first(MasterKey)
                             .then(userData => {
                                 if (userData) {
-                                    let profile = parseProfile(userData);
+                                    let profile = UserData.parseUserData(userData);
                                     _result.push(profile);
                                     cb();
                                 }
@@ -451,14 +434,14 @@ function profile(req, res) {
     }
 
     findUsername(username)
-        .then(findUserData)
+        .then(UserData.getByUser)
         .then(toUser => {
-            new Parse.Query(UserFollow)
+            new Parse.Query('UserFollow')
                 .equalTo('from', req.user)
                 .equalTo('to', toUser.get('user'))
                 .count(MasterKey)
                 .then(isFollow => {
-                    let profile      = parseProfile(toUser);
+                    let profile      = UserData.parseUserData(toUser);
                     profile.isFollow = isFollow ? true : false;
                     res.success(profile);
                 }).catch(res.error);
@@ -512,14 +495,11 @@ function findUsername(username) {
     return new Parse.Query(Parse.User).equalTo('username', username).first(MasterKey);
 }
 
-function findUserData(user) {
-    return new Parse.Query(UserData).equalTo('user', user).first(MasterKey);
-}
 function findUserByUsername(req, res, next) {
     const username = req.params.username;
 
     findUsername(username)
-        .then(findUserData)
+        .then(UserData.getByUser)
         .then(res.success)
         .catch(res.error);
 }
@@ -759,7 +739,7 @@ function validateEmail(req, res) {
 }
 
 function getUserData(user) {
-    return new Parse.Query('UserData').equalTo('user', user).first(MasterKey);
+    return UserData.getByUser('user', user);
 }
 // Album Gallery
 function incrementAlbumGallery(user) {
@@ -819,25 +799,4 @@ function parseUser(user) {
     return obj;
 }
 
-function parseProfile(userData) {
-    if (userData) {
-        let obj = {
-            id:              userData.get('user').id,
-            _id:             userData.get('user').id,
-            name:            userData.get('name'),
-            email:           userData.get('email'),
-            username:        userData.get('username'),
-            followersTotal:  userData.get('followersTotal'),
-            followingsTotal: userData.get('followingsTotal'),
-            galleriesTotal:  userData.get('galleriesTotal'),
-            status:          userData.get('status'),
-            isFollow:        false,
-            galleries:       [],
-            createdAt:       userData.createdAt
-        };
-        if (userData.get('photo')) {
-            obj.photo = userData.get('photo').url();
-        }
-        return obj;
-    }
-}
+

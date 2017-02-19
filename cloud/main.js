@@ -64,7 +64,6 @@ Parse.Cloud.define('getFollowers', User.getFollowers);
 Parse.Cloud.define('getFollowing', User.getFollowing);
 Parse.Cloud.define('getUsers', User.getUsers);
 Parse.Cloud.define('listUsers', User.listUsers);
-Parse.Cloud.define('createUser', User.createUser);
 Parse.Cloud.define('updateUser', User.updateUser);
 Parse.Cloud.define('destroyUser', User.destroyUser);
 Parse.Cloud.define('saveFacebookPicture', User.saveFacebookPicture);

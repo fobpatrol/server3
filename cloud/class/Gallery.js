@@ -132,15 +132,18 @@ function beforeSave(req, res) {
 
     // Resize Image
     if (!object.existed()) {
+
+        object.set('isApproved', true);
+
         let imageUrl = object.get('image').url();
 
-        // cover
-        // progressive
-        // thumb
 
         new Parse.Promise.when([
+            // cover
             Image.resizeUrl(imageUrl, 640).then(image => Image.saveImage(image)),
+            // progressive
             Image.progressive(imageUrl, 640).then(image => Image.saveImage(image)),
+            // thumb
             Image.resizeUrl(imageUrl, 160).then(image => Image.saveImage(image)),
         ]).then(parseFile => {
 
@@ -154,16 +157,7 @@ function beforeSave(req, res) {
             object.increment('galleriesTotal', 0);
             object.increment('commentsTotal', 0);
             object.increment('views', 0);
-
-            new Parse.Query('UserData').equalTo('user', user).first(MasterKey).then(profile => {
-
-                // Set default values
-                object.set('user', user);
-                object.set('isApproved', true);
-                object.set('profile', profile);
-                //gallery.setACL(new Parse.Parse.ACL(req.user));
-                return res.success();
-            });
+            res.success();
 
         }).catch(res.error);
     } else {

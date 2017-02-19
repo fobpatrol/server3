@@ -4,19 +4,14 @@ const ParseObject = Parse.Object.extend('GallerySetting');
 const MasterKey       = {useMasterKey: true};
 
 module.exports    = {
-    start : start,
+    install : install,
     create: create
 };
 
-function start(acl) {
+function install(acl) {
     let promises = [];
     let settings = require('../data/setting.json');
-
-    _.each(settings, (setting)=> {
-        console.log('Setting ', setting);
-        promises.push(create(setting, acl));
-    })
-
+    _.each(settings, (setting)=> promises.push(create(setting, acl)))
     return Parse.Promise.when(promises);
 }
 
@@ -29,5 +24,5 @@ function create(obj, acl) {
         gallery.setACL(acl);
     }
 
-    return gallery.save();
+    return gallery.save(MasterKey);
 }

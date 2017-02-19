@@ -75,35 +75,35 @@ function parseGalleryAlbum(item) {
 
 
 function beforeSave(req, res) {
-    const gallery = req.object;
-    const user    = req.user || req.object.get('user');
+    const _object = req.object;
+    const _user   = req.user || req.object.get('user');
 
-    if (!user) {
+    if (!_user) {
         return res.error('Not Authorized');
     }
 
-    if (!gallery.get('title')) {
+    if (!_object.get('title')) {
         return res.error('Need image title');
     }
 
     //https://parse.com/docs/js/guide#performance-implement-efficient-searches
     let toLowerCase = w => w.toLowerCase();
-    var words       = gallery.get('title').split(/\b/);
+    var words       = _object.get('title').split(/\b/);
     words           = _.map(words, toLowerCase);
     var stopWords   = ['the', 'in', 'and'];
     words           = _.filter(words, w => w.match(/^\w+$/) && !_.includes(stopWords, w));
-    var hashtags    = gallery.get('title').match(/#.+?\b/g);
+    var hashtags    = _object.get('title').match(/#.+?\b/g);
     hashtags        = _.map(hashtags, toLowerCase);
 
-    gallery.set('words', words);
-    gallery.set('hashtags', hashtags);
+    _object.set('words', words);
+    _object.set('hashtags', hashtags);
 
     // Set default values
-    gallery.set('user', user);
-    gallery.set('isApproved', true);
+    _object.set('user', _user);
+    _object.set('isApproved', true);
 
     // Define type increment
-    gallery.increment('qtyPhotos', 0);
+    _object.increment('qtyPhotos', 0);
     res.success();
 }
 

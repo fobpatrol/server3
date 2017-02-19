@@ -67,42 +67,42 @@ function start(req, res, next) {
         return res.error('Password should be at least 6 characters');
     }
 
-    var roles = [];
-
+    let roles = [];
     let roleACL = new Parse.ACL();
     roleACL.setPublicReadAccess(true);
 
-    var role = new Parse.Role('Admin', roleACL);
-    roles.push(role);
-    var role = new Parse.Role('User', roleACL);
-    roles.push(role);
-
-    let user = new Parse.User();
-    user.set('name', name);
-    user.set('email', email);
-    user.set('username', username);
-    user.set('password', password);
-    user.set('roleName', 'Admin');
-    user.set('gender', 'man');
-    user.set('photoThumb', undefined);
-
-    new Parse.Query(Parse.Role)
-        .find()
-        .then(objRoles => Parse.Object.destroyAll(objRoles, MasterKey))
-        .then(() => Parse.Object.saveAll(roles))
-        .then(() => user.signUp())
-        .then(objUser=> {
-            objUser.setACL(new Parse.ACL(objUser));
-            objUser.save(null, MasterKey);
-
-            // Create Settings
-            GallerySetting
-                .start(new Parse.ACL(objUser))
-                .then((data)=> {
-                    console.log('Settings create', data);
-                    res.success(objUser.id);
-                })
-
-        }, error=> res.error(error.message));
+    //let role = new Parse.Role('Admin', roleACL);
+    //roles.push(role);
+    //let role = new Parse.Role('User', roleACL);
+    //roles.push(role);
+    //
+    //let user = new Parse.User();
+    //user.set('name', name);
+    //user.set('email', email);
+    //user.set('username', username);
+    //user.set('password', password);
+    //user.set('roleName', 'Admin');
+    //user.set('gender', 'man');
+    //user.set('photoThumb', undefined);
+    //
+    //new Parse.Query(Parse.Role)
+    //    .find()
+    //    .then(objRoles => Parse.Object.destroyAll(objRoles, MasterKey))
+    //    .then(() => Parse.Object.saveAll(roles))
+    //    .then(() => user.signUp())
+    //    .then(objUser=> {
+    //        objUser.setACL(new Parse.ACL(objUser));
+    //        objUser.save(null, MasterKey);
+    //
+    //        let acl = new Parse.ACL(objUser);
+    //
+    //        // Create Settings
+    //        GallerySetting.install(acl)
+    //            .then((data)=> {
+    //                console.log('Settings create', data);
+    //                res.success(objUser.id);
+    //            })
+    //
+    //    }, error=> res.error(error.message));
 
 }
