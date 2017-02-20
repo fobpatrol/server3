@@ -694,20 +694,22 @@ function saveFacebookPicture(req, res, next) {
     }
 
     let profilePictureUrl = 'https://graph.facebook.com/' + facebook + '/picture';
-
-    return Parse.Cloud.httpRequest({
+    let photoFile;
+    let params            = {
         url:             profilePictureUrl,
         followRedirects: true,
         params:          {type: 'large'}
-    }).then(httpResponse => {
-        let buffer = httpResponse.buffer;
-        let base64 = buffer.toString('base64');
-        return Image.saveImage(base64);
-    }).then(savedFile => {
-        user.set({'photo': savedFile});
-        return user.save(null, {sessionToken: user.getSessionToken()});
-    }).then(success => res.success(success)).catch(error => res.error(error.message));
+    };
 
+    return Parse.Cloud.httpRequest(params)
+        .then(httpResponse => Image.saveImage(httpResponse.buffer.toString('base64')))
+        .then(photo => photoFile = photo)
+        .then(() => user.set({'photo': photoFile}).save(null, {sessionToken: user.getSessionToken()}))
+        .then(() => UserData.getByUser(user))
+        .then(UserData => UserData.set('photo', photoFile).save(null, MasterKey))
+        .then(() => parseUser(user))
+        .then(res.success)
+        .catch(error => res.error(error.message));
 }
 
 function validateUsername(req, res) {
@@ -738,44 +740,41 @@ function validateEmail(req, res) {
         }, res.error);
 }
 
-function getUserData(user) {
-    return UserData.getByUser('user', user);
-}
 // Album Gallery
 function incrementAlbumGallery(user) {
-    return getUserData(user).then(user => user.increment('albumTotal').save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('albumTotal',1).save(null, MasterKey));
 }
 
 function decrementAlbumGallery(user) {
-    return getUserData(user).then(user => user.increment('albumTotal', 1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('albumTotal', 1).save(null, MasterKey));
 }
 
 // Gallery
 function updateGalleriesTotal(user, galleriesTotal) {
-    return getUserData(user).then(userData => userData.set('galleriesTotal', galleriesTotal).save(null, MasterKey));
+    return UserData.getByUser(user).then(userData => userData.set('galleriesTotal', galleriesTotal).save(null, MasterKey));
 }
 
 //seguidores
 function incrementFollowers(user) {
-    return getUserData(user).then(user => user.increment('followersTotal').save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('followersTotal',1).save(null, MasterKey));
 }
 function decrementFollowers(user) {
-    return getUserData(user).then(user => user.increment('followersTotal', -1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('followersTotal', -1).save(null, MasterKey));
 }
 //seguindo
 function incrementFollowing(user) {
-    return getUserData(user).then(user => user.increment('followingsTotal').save(null, MasterKey));
+    return UserData.getByUser(user).then(userData => userData.increment('followingsTotal',1).save(null, MasterKey));
 }
 function decrementFollowing(user) {
-    return getUserData(user).then(user => user.increment('followingsTotal', -1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('followingsTotal', -1).save(null, MasterKey));
 }
 // comment
 function incrementComment(user) {
-    return getUserData(user).then(user => user.increment('commentsTotal').save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('commentsTotal',1).save(null, MasterKey));
 }
 
 function decrementComment(user) {
-    return getUserData(user).then(user => user.increment('commentsTotal', 1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('commentsTotal', -1).save(null, MasterKey));
 }
 
 function parseUser(user) {
