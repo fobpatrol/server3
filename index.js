@@ -12,14 +12,15 @@ const DATABASE_URI    = process.env.MONGO_URL || process.env.DATABASE_URI || pro
 const SERVER_URL      = process.env.SERVER_URL || 'http://localhost:1337/parse';
 const APP_ID          = process.env.APP_ID || 'myAppId';
 const MASTER_KEY      = process.env.MASTER_KEY || 'myMasterKey';
+const JAVASCRIPT_KEY  = process.env.JAVASCRIPT_KEY || 'myJavascriptKey';
 const APP_NAME        = process.env.APP_NAME || 'parseApp';
 const PARSE_MOUNT     = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';
 const REDIS_URL       = process.env.REDIS_URL;
 
 // Parse Push Android
-let FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
-let FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
+const FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
+const FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
 
 // Database Ecosystem file
 if (!DATABASE_URI) {
@@ -27,19 +28,20 @@ if (!DATABASE_URI) {
 }
 
 let ServerConfig = {
-    databaseURI     : DATABASE_URI,
-    cloud           : CLOUD_CODE_MAIN,
-    appId           : APP_ID,
-    masterKey       : MASTER_KEY,
-    serverURL       : SERVER_URL,
-    publicServerURL : SERVER_URL,
-    appName         : APP_NAME,
-    verifyUserEmails: false,
-    // enableAnonymousUsers    : true,
-    // allowClientClassCreation: true,
-    maxUploadSize   : '20mb',
-    liveQuery       : {
-        classNames: ['ChatChannel', 'ChatMessage', 'GalleryComment'],
+    databaseURI:              DATABASE_URI,
+    cloud:                    CLOUD_CODE_MAIN,
+    appId:                    APP_ID,
+    javascriptKey:            JAVASCRIPT_KEY,
+    masterKey:                MASTER_KEY,
+    serverURL:                SERVER_URL,
+    publicServerURL:          SERVER_URL,
+    appName:                  APP_NAME,
+    verifyUserEmails:         false,
+    enableAnonymousUsers:     false,
+    allowClientClassCreation: true,
+    maxUploadSize:            '20mb',
+    liveQuery:                {
+        classNames: ['GalleryActivity', 'GalleryComments', 'ChatChannel', 'ChatMessage'],
     },
 };
 
