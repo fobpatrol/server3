@@ -44,6 +44,7 @@ Parse.Cloud.define('dashboard', Dashboard.home);
 
 // GalleryActivity
 Parse.Cloud.define('feedActivity', GalleryActivity.feed);
+Parse.Cloud.define('clearActivity', GalleryActivity.clear);
 
 // If the push is set
 if (PUSH_ANDROID_API_KEY && PUSH_ANDROID_SENDER) {

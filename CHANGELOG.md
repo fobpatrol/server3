@@ -1,3 +1,12 @@
+## [2.7.5](https://github.com/photogram/photogram2) (2017-02-21)
+### New Feature
+
+- Activies count in real time
+
+### Important
+
+- Upgrade your Parse Server!
+
 ## [2.7.3](https://github.com/photogram/photogram2) (2017-02-20)
 
 ### Bug Fixes
