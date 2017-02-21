@@ -9,6 +9,9 @@ module.exports = {
     base64toBuffer:   base64toBuffer,
     ParseHttpRequest: ParseHttpRequest,
 }
+const _QUALITY = 80;
+const _BLUR    = 20;
+const _EXT     = 'jpeg';
 
 function base64toBuffer(base64) {
     return new Buffer.from(base64, 'base64').toString('ascii')
@@ -41,8 +44,8 @@ function resize(buffer, width) {
             .resize(width)
             .embed()
             .raw()
-            .webp({quality: 90})
-            .toFormat(sharp.format.webp)
+            .webp({quality: _QUALITY})
+            .toFormat(sharp.format[_EXT])
             .toBuffer((error, buffer) => {
                 if (error) {
                     reject(error)
@@ -60,9 +63,9 @@ function progressive(url, width) {
                 .resize(width)
                 .embed()
                 .raw()
-                .blur(20)
-                .webp({quality: 80})
-                .toFormat(sharp.format.webp)
+                .blur(_BLUR)
+                .webp({quality: _QUALITY})
+                .toFormat(sharp.format[_EXT])
                 .toBuffer((error, buffer) => {
                     if (error) {
                         reject(error)
@@ -75,5 +78,5 @@ function progressive(url, width) {
 }
 
 function saveImage(base64) {
-    return new Parse.File('image.webp', {base64: base64}).save()
+    return new Parse.File('image.jpeg', {base64: base64}).save()
 }
