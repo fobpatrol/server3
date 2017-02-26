@@ -92,7 +92,7 @@ function afterSave(req, res) {
 
 function getMessages(req, res) {
     const user      = req.user;
-    const channelId = req.params.channel;
+    const channelId = req.params.channelId;
     console.log('user', user);
 
     if (!user) {
@@ -127,20 +127,10 @@ function parseMessages(messages) {
             image    : message.get('image'),
             audio    : message.get('audio'),
             file     : message.get('file'),
-            user     : parseUser(message.get('user')),
+            user     : User.parseUser(message.get('user')),
             createdAt: message.createdAt
         };
         _messages.push(obj);
     })
     return _messages
-}
-
-function parseUser(user) {
-    return {
-        id      : user.id,
-        name    : user.get('name'),
-        username: user.get('username'),
-        photo   : user.get('photo'),
-    }
-
 }

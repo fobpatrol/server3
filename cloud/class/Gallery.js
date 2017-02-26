@@ -184,9 +184,7 @@ function afterDelete(req, res) {
     let deleteActivity = new Parse.Query('GalleryActivity').equalTo('gallery', req.object).find().then(results => {
         // Collect one promise for each delete into an array.
         let promises = [];
-        _.each(results, result => {
-            promises.push(result.destroy());
-        });
+        _.each(results, result => promises.push(result.destroy()));
         // Return a new promise that is resolved when all of the deletes are finished.
         return Parse.Promise.when(promises);
 

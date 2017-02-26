@@ -6,9 +6,9 @@ const User = require('./User');
 const MasterKey = {useMasterKey: true};
 
 module.exports = {
-    get: get,
-    getChatChannels: getChatChannels,
-    getChatChannel: getChatChannel,
+    get:               get,
+    getChatChannels:   getChatChannels,
+    getChatChannel:    getChatChannel,
     createChatChannel: createChatChannel,
 };
 
@@ -55,36 +55,36 @@ function getChatChannel(req, res) {
 
 
     // Multi Promise
-    new Parse.Promise([
-        get(req.params.channelId),
+    get(req.params.channelId).then(_channel => {
+
         new Parse.Query(ChatMessage)
             .descending('createdAt')
             .equalTo('channel', _channel)
             .include('user')
             .first(MasterKey)
-    ]).when(data => {
-        let _channel = data[0];
-        let message = data[1];
+            .then(message => {
 
-        let obj = {
-            id: _channel.id,
-            createdAt: _channel.createdAt,
-            updatedAt: _channel.updatedAt,
-            profiles: [],
-            users: [],
-            message: message,
-            obj: _channel
-        };
-        console.log('obj', obj);
+                let obj = {
+                    id:        _channel.id,
+                    createdAt: _channel.createdAt,
+                    updatedAt: _channel.updatedAt,
+                    profiles:  [],
+                    users:     [],
+                    message:   message,
+                    obj:       _channel
+                };
+                console.log('obj', obj);
 
-        _channel.relation('users').query().find(MasterKey).then(_users => {
-            obj.users = _.filter(_users, _user => user.id != _user.id);
-            obj.users = obj.users.map(user => User.parseUser(user));
+                _channel.relation('users').query().find(MasterKey).then(_users => {
+                    // obj.users = _.filter(_users, _user => user.id != _user.id);
+                    obj.users = _users.map(user => User.parseUser(user));
 
-            console.log('obj -- final', obj);
-            res.success(obj);
+                    console.log('obj -- final', obj);
+                    res.success(obj);
 
-        }).catch(res.error);
+                }).catch(res.error);
+
+            });
 
     }).catch(res.error);
 }
@@ -112,14 +112,14 @@ function getChatChannels(req, res) {
 
             _.each(_data, _channel => {
                 let obj = {
-                    id: _channel.id,
-                    _id: _channel.id,
+                    id:        _channel.id,
+                    _id:       _channel.id,
                     createdAt: _channel.createdAt,
                     updatedAt: _channel.updatedAt,
-                    profiles: [],
-                    users: [],
-                    message: null,
-                    obj: _channel
+                    profiles:  [],
+                    users:     [],
+                    message:   null,
+                    obj:       _channel
                 };
                 console.log('obj', obj);
 

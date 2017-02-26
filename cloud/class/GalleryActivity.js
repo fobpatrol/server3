@@ -1,28 +1,28 @@
 'use strict'
-const _           = require('lodash')
-const User        = require('./../class/User')
+const _ = require('lodash')
+const User = require('./../class/User')
 const ParseObject = Parse.Object.extend('GalleryActivity')
-const UserFollow  = Parse.Object.extend('UserFollow')
-const MasterKey   = {useMasterKey: true}
+const UserFollow = Parse.Object.extend('UserFollow')
+const MasterKey = {useMasterKey: true}
 
 module.exports = {
     afterSave: afterSave,
     create:    create,
     feed:      feed,
-    clear:  clear,
+    clear:     clear,
 }
 
 function clear(req, res) {
-    new Parse.Query(ParseObject)
-        .equalTo('user', req.user)
+    const user = req.user;
+
+    new Parse.Query('GalleryActivity')
+        .equalTo('toUser', user)
         .equalTo('isRead', false)
         .find(MasterKey)
-        .then(activities => {
-            new Parse.Promise.when([
-                activities.map(item => activities.set('isRead', true).save())
-            ]).then(res.success)
-                .catch(res.error)
-        })
+        .then(activities => activities.map(item => item.set('isRead', true).save(MasterKey)))
+        .then(promises => new Parse.Promise.when(promises))
+        .then(res.success)
+        .catch(res.error);
 }
 
 function afterSave(req, res) {
@@ -54,11 +54,11 @@ function afterSave(req, res) {
 
     Parse.Promise.when(promises).then(result => {
         let fromUser = result[0]
-        let toUser   = result[1]
-        let action   = req.object.get('action')
+        let toUser = result[1]
+        let action = req.object.get('action')
         let UserLang = toUser.attributes.lang || 'en'
-        let lang     = require('./../helpers/loadJson')(__dirname + '/../../i18n/' + UserLang + '.json')
-        let channel  = toUser.attributes.username
+        let lang = require('./../helpers/loadJson')(__dirname + '/../../i18n/' + UserLang + '.json')
+        let channel = toUser.attributes.username
 
         if (lang[action]) {
             let message = fromUser.attributes.name + lang[action]
@@ -129,7 +129,7 @@ function create(obj, acl) {
 }
 
 function feed(req, res, next) {
-    const _page  = req.params.page || 1
+    const _page = req.params.page || 1
     const _limit = req.params.limit || 10
 
     console.log('Start feed', req.params)
