@@ -1,9 +1,10 @@
 'use strict';
-const _ = require('lodash');
+const _           = require('lodash');
 const ParseObject = Parse.Object.extend('ChatChannel');
 const ChatMessage = Parse.Object.extend('ChatMessage');
-const User = require('./User');
-const MasterKey = {useMasterKey: true};
+const User        = require('./User');
+const UserData    = require('./UserData');
+const MasterKey   = {useMasterKey: true};
 
 module.exports = {
     get:               get,
@@ -18,8 +19,9 @@ function get(objectId) {
 }
 
 function createChatChannel(req, res) {
-    const user = req.user;
-    const users = req.params.users;
+    const user   = req.user;
+    const params = req.params;
+    const users  = req.params.users;
 
     if (!user) {
         return res.error('Not Authorized');
@@ -29,21 +31,28 @@ function createChatChannel(req, res) {
         return res.error('Not users');
     }
 
-    new Parse.Promise.when(users.map(user => User.get(user))).then(_users => {
+    users.push(user.id);
 
-        // Define new Parse Object in memory
-        let channel = new ParseObject();
-        // Define relattion in Parse Object
-        let relation = channel.relation('users');
-        // Add Actual user
-        _users.push(user);
-        // Map Users for relation
-        _users.map(user => relation.add(user));
-        // Create and save new Channel
-        return channel.save().then(res.success).catch(res.error);
+    console.log(users)
 
-    }).catch(res.error);
+    // Define new Parse Object in memory
+    let channel = new ParseObject();
 
+    if (params.name) {
+        channel.set('name', params.name);
+    }
+
+    channel.set('usersIds', users);
+
+    new Parse.Promise.when(users.map(user => User.get(user)))
+        .then(users => {
+            users.map(user => channel.relation('users').add(user))
+            return new Parse.Promise.when(users.map(user => UserData.getByUser(user)))
+        })
+        .then(users => users.map(user => channel.relation('profiles').add(user)))
+        .then(() => channel.save())
+        .then(res.success)
+        .catch(res.error);
 
 }
 
@@ -134,7 +143,7 @@ function getChatChannels(req, res) {
                         .first(MasterKey)
                         .then(message => {
                             if (message) {
-                                obj.message = message;
+                                obj.message   = message;
                                 obj.createdAt = message.createdAt;
                             }
                             console.log('obj -- final', obj);

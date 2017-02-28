@@ -455,6 +455,8 @@ function feed(req, res) {
                         obj.isBookmark  = _isBookmark ? true : false;
                         obj.comments    = _comments.map(comment => GalleryComment.parseComment(comment));
 
+                        obj['obj'] = _gallery;
+
                         // Include obj in array result
                         _result.push(obj);
                         // Finish query

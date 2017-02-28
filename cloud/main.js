@@ -31,6 +31,7 @@ Parse.Cloud.define('getChatChannels', ChatChannel.getChatChannels);
 Parse.Cloud.define('createChatChannel', ChatChannel.createChatChannel);
 
 // Chat Message
+Parse.Cloud.beforeSave('ChatMessage', ChatMessage.beforeSave);
 Parse.Cloud.define('createMessage', ChatMessage.createMessage);
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
 // If the push is set
