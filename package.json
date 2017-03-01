@@ -17,7 +17,6 @@
     "express": "~4.14.x",
     "express-ejs-layouts": "^2.2.0",
     "lodash": "^4.17.4",
-    "kerberos": "~0.0.x",
     "method-override": "^2.3.7",
     "parse": "~1.9.2",
     "parse-server": "~2.3.5",
