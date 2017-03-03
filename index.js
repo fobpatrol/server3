@@ -19,7 +19,7 @@ const PARSE_MOUNT          = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN      = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';
 const LIVEQUERY_CLASSNAMES = ['GalleryActivity', 'GalleryComments', 'ChatChannel', 'ChatMessage'];
 const REDIS_URL            = process.env.REDIS_URL;
-const FIREBASE_SENDER_ID   = process.env.FIREBASE_SENDER_ID;
+const FIREBASE_SENDER_KEY   = process.env.FIREBASE_SENDER_KEY;
 const FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
 
 // Database Ecosystem file
@@ -49,10 +49,10 @@ if (REDIS_URL) {
     ServerConfig.liveQuery['redisURL'] = REDIS_URL;
 }
 
-if (FIREBASE_SENDER_ID && FIREBASE_API_KEY) {
+if (FIREBASE_SENDER_KEY && FIREBASE_API_KEY) {
     ServerConfig['push'] = {
         android: {
-            senderId: FIREBASE_SENDER_ID,
+            senderId: FIREBASE_SENDER_KEY,
             apiKey:   FIREBASE_API_KEY
         }
     }
