@@ -2,6 +2,7 @@
 const express        = require('express');
 const ParseServer    = require('parse-server').ParseServer;
 const path           = require('path');
+const ParseDashboard = require('parse-dashboard');
 const FSFilesAdapter = require('parse-server-fs-adapter');
 const S3Adapter      = require('parse-server').S3Adapter;
 const fs             = require('fs');
@@ -14,12 +15,13 @@ const SERVER_URL           = process.env.SERVER_URL || 'http://localhost:1337/pa
 const APP_ID               = process.env.APP_ID || 'myAppId';
 const MASTER_KEY           = process.env.MASTER_KEY || 'myMasterKey';
 const JAVASCRIPT_KEY       = process.env.JAVASCRIPT_KEY || 'unset';
+const CLIENT_KEY           = process.env.CLIENT_KEY || 'unset';
 const APP_NAME             = process.env.APP_NAME || 'parseApp';
 const PARSE_MOUNT          = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN      = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';
 const LIVEQUERY_CLASSNAMES = ['GalleryActivity', 'GalleryComments', 'ChatChannel', 'ChatMessage'];
 const REDIS_URL            = process.env.REDIS_URL;
-const FIREBASE_SENDER_KEY   = process.env.FIREBASE_SENDER_KEY;
+const FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
 const FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
 
 // Database Ecosystem file
@@ -32,6 +34,7 @@ let ServerConfig = {
     cloud:                    CLOUD_CODE_MAIN,
     appId:                    APP_ID,
     javascriptKey:            JAVASCRIPT_KEY,
+    clientKey:                CLIENT_KEY,
     masterKey:                MASTER_KEY,
     serverURL:                SERVER_URL,
     publicServerURL:          SERVER_URL,
@@ -130,6 +133,34 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => res.render('index'));
+
+// Parse Dashboard
+const DASHBOARD_URL      = process.env.DASHBOARD_URL || '/dashboard';
+const DASHBOARD_USER     = process.env.DASHBOARD_USER || 'admin';
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin123';
+if (DASHBOARD_USER) {
+    const dashboard = new ParseDashboard({
+        apps:        [
+            {
+                appName:   APP_NAME,
+                serverURL: SERVER_URL,
+                appId:     APP_ID,
+                masterKey: MASTER_KEY,
+                iconName:  'icon.png'
+            }
+        ],
+        users:       [
+            {
+                user: DASHBOARD_USER, // Used to log in to your Parse Dashboard
+                pass: DASHBOARD_PASSWORD
+            }
+        ],
+        iconsFolder: 'icons'
+    }, true);
+
+    // make the Parse Dashboard available at /dashboard
+    app.use(DASHBOARD_URL, dashboard);
+}
 
 const httpServer = require('http').createServer(app);
 httpServer.listen(PORT, () => console.log(ServerConfig));

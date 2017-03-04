@@ -1,3 +1,12 @@
+## [2.7.15](https://github.com/photogram/photogram2) (2017-03-04)
+- Parse Dashboard fixed
+- Fix push notification
+- Add CLIENT_KEY for Push Notification
+
+
+## [2.7.5](https://github.com/photogram/photogram2) (2017-03-04)
+- Fix Push notification
+
 ## [2.7.5](https://github.com/photogram/photogram2) (2017-02-21)
 ### New Feature
 

@@ -48,6 +48,9 @@
         // javascriptKey, restAPIKey, dotNetKey, clientKey
         "JAVASCRIPT_KEY": "dOsjDb9wLq5PIQ10cH8D9u5C97isVL1D",
 
+        // (required) - The for Push Notification
+        "CLIENT_KEY": "dOsjDb9wLq5PIQ10cH8D9u5C97isVL1D",
+
         // (required) - The application id to host with this server instance.
         "MASTER_KEY": "yY1n4p074b64D4fJxw4U7LBkJE3IIPC8",
 
@@ -60,7 +63,7 @@
         "DASHBOARD_PASSWORD": "admin123",
 
         // (optional) - Local folder for Storage Files
-        "UPLOAD_LOCAL_PATH": "./storage",
+        "UPLOAD_LOCAL_PATH": "./storage"
         
         // (optional) - S3 for Storage Files
         // Files are hosted via automaticamentes GridStore Adapter in MongoDB
@@ -70,13 +73,13 @@
         //"BUCKET_NAME": "",
 
         // (optional) - MAILGUN for send Email
-        "MAILGUN_API_KEY": "key-3a05e956706a4bd579982460b96cf43a",
-        "MAILGUN_DOMAIN": "codevibe.io",
-        "MAILGUN_FROM_ADDRESS": "photogram.ionic@gmail.com",
+//        "MAILGUN_API_KEY": "",
+//        "MAILGUN_DOMAIN": "",
+//        "MAILGUN_FROM_ADDRESS": "",
         
         // Firebase Push Notification
-        "FIREBASE_API_KEY": "AAAAQotaMSc:APA91bGMKiTAL8XH8J_if8JRcapICeFLmZOvvnogfYQgRdVG_sU6CWzeAKvyxuC4unG8038uKlc0nV2cGgvtzgjDnsYmXpJfyiymEBe3fW4NDwbdK5fbjjiCs_FsOxiIKqs6KCTgHQLZiwFEDmRzbnqF0No9a0pAFA",
-        "FIREBASE_SENDER_ID": "285805785383",
+//        "FIREBASE_API_KEY": "",
+//        "FIREBASE_SENDER_ID": ""
       }
     }
   ]

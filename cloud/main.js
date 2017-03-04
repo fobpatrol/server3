@@ -12,7 +12,7 @@ const Dashboard       = require('./class/Dashboard');
 const Push            = require('./class/Push');
 
 // Parse Push Android
-let FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
+let FIREBASE_SENDER_ID  = process.env.FIREBASE_SENDER_ID;
 let FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
 
@@ -35,7 +35,7 @@ Parse.Cloud.beforeSave('ChatMessage', ChatMessage.beforeSave);
 Parse.Cloud.define('createMessage', ChatMessage.createMessage);
 Parse.Cloud.define('getChatMessages', ChatMessage.getMessages);
 // If the push is set
-if (FIREBASE_API_KEY && FIREBASE_SENDER_KEY) {
+if (FIREBASE_API_KEY && FIREBASE_SENDER_ID) {
     Parse.Cloud.afterSave('ChatMessage', ChatMessage.afterSave);
 }
 
@@ -48,7 +48,7 @@ Parse.Cloud.define('feedActivity', GalleryActivity.feed);
 Parse.Cloud.define('clearActivity', GalleryActivity.clear);
 
 // If the push is set
-if (FIREBASE_API_KEY && FIREBASE_SENDER_KEY) {
+if (FIREBASE_API_KEY && FIREBASE_SENDER_ID) {
     Parse.Cloud.afterSave('GalleryActivity', GalleryActivity.afterSave);
 }
 

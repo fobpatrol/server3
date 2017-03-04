@@ -76,7 +76,7 @@ function afterSave(req, res) {
         .relation('users')
         .query()
         .find(MasterKey)
-        .then(users => _.filter(users, _user => user.id != _user.id).map(sendPushMessage))
+        .then(users => _.filter(users, _user => user.id != _user.id).map(user => sendPushMessage(message, user, channel.id)))
         .then(() => {
             console.log('push sent. args received: ' + JSON.stringify(arguments) + '\n');
             res.success({
@@ -86,14 +86,14 @@ function afterSave(req, res) {
         }).catch(res.error);
 
 
-    function sendPushMessage(toUser) {
+    function sendPushMessage(message, toUser, channel) {
         // Create message to push
         let dataMessage = {
             title:           user.get('name'),
             alert:           message,
             badge:           'Increment',
             event:           'chat',
-            chat:            channel.id,
+            chat:            channel,
             icon:            'icon.png',
             iconColor:       '#045F54',
             uri:             'https://photogram.codevibe.io/chat/' + channel.id,
