@@ -19,7 +19,7 @@ const CLIENT_KEY           = process.env.CLIENT_KEY || 'unset';
 const APP_NAME             = process.env.APP_NAME || 'parseApp';
 const PARSE_MOUNT          = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN      = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';
-const LIVEQUERY_CLASSNAMES = ['GalleryActivity', 'GalleryComments', 'ChatChannel', 'ChatMessage'];
+const LIVEQUERY_CLASSNAMES = ['GalleryActivity', 'GalleryComment', 'ChatChannel', 'ChatMessage'];
 const REDIS_URL            = process.env.REDIS_URL;
 const FIREBASE_SENDER_KEY  = process.env.FIREBASE_SENDER_KEY;
 const FIREBASE_API_KEY     = process.env.FIREBASE_API_KEY;
@@ -30,20 +30,20 @@ if (!DATABASE_URI) {
 }
 
 let ServerConfig = {
-    databaseURI:              DATABASE_URI,
-    cloud:                    CLOUD_CODE_MAIN,
-    appId:                    APP_ID,
-    javascriptKey:            JAVASCRIPT_KEY,
-    clientKey:                CLIENT_KEY,
-    masterKey:                MASTER_KEY,
-    serverURL:                SERVER_URL,
-    publicServerURL:          SERVER_URL,
-    appName:                  APP_NAME,
-    verifyUserEmails:         false,
-    enableAnonymousUsers:     false,
+    databaseURI             : DATABASE_URI,
+    cloud                   : CLOUD_CODE_MAIN,
+    appId                   : APP_ID,
+    javascriptKey           : JAVASCRIPT_KEY,
+    clientKey               : CLIENT_KEY,
+    masterKey               : MASTER_KEY,
+    serverURL               : SERVER_URL,
+    publicServerURL         : SERVER_URL,
+    appName                 : APP_NAME,
+    verifyUserEmails        : false,
+    enableAnonymousUsers    : false,
     allowClientClassCreation: true,
-    maxUploadSize:            '20mb',
-    liveQuery:                {
+    maxUploadSize           : '20mb',
+    liveQuery               : {
         classNames: LIVEQUERY_CLASSNAMES,
     },
 };
@@ -56,7 +56,7 @@ if (FIREBASE_SENDER_KEY && FIREBASE_API_KEY) {
     ServerConfig['push'] = {
         android: {
             senderId: FIREBASE_SENDER_KEY,
-            apiKey:   FIREBASE_API_KEY
+            apiKey  : FIREBASE_API_KEY
         }
     }
 }
@@ -89,26 +89,26 @@ const MAILGUN_DOMAIN       = process.env.MAILGUN_DOMAIN;
 const MAILGUN_FROM_ADDRESS = process.env.MAILGUN_FROM_ADDRESS;
 if (MAILGUN_API_KEY) {
     ServerConfig.emailAdapter = {
-        module:  'parse-server-simple-mailgun-adapter',
+        module : 'parse-server-simple-mailgun-adapter',
         options: {
             // The address that your emails come from
             fromAddress: MAILGUN_FROM_ADDRESS,
             // Your domain from mailgun.com
-            domain:      MAILGUN_DOMAIN,
+            domain     : MAILGUN_DOMAIN,
             // Your API key from mailgun.com
-            apiKey:      MAILGUN_API_KEY,
+            apiKey     : MAILGUN_API_KEY,
 
             // Verification email subject
-            verificationSubject:  'Please verify your e-mail for %appname%',
+            verificationSubject : 'Please verify your e-mail for %appname%',
             // Verification email body
-            verificationBody:     'Hi,\n\nYou are being asked to confirm the e-mail address %email% with %appname%\n\nClick here to confirm it:\n%link%',
+            verificationBody    : 'Hi,\n\nYou are being asked to confirm the e-mail address %email% with %appname%\n\nClick here to confirm it:\n%link%',
             //OPTIONAL (will send HTML version of email):
             verificationBodyHTML: fs.readFileSync("./email/verificationBody.html", "utf8") || null,
 
             // Password reset email subject
             passwordResetSubject: 'Password Reset Request for %appname%',
             // Password reset email body
-            passwordResetBody:    'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here to reset it:\n%link%',
+            passwordResetBody   : 'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here to reset it:\n%link%',
             //OPTIONAL (will send HTML version of email):
             //passwordResetBodyHTML: "<!DOCTYPE html><html xmlns=http://www.w3.org/1999/xhtml>........"
         }
@@ -140,16 +140,16 @@ const DASHBOARD_USER     = process.env.DASHBOARD_USER || 'admin';
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin123';
 if (DASHBOARD_USER) {
     const dashboard = new ParseDashboard({
-        apps:        [
+        apps       : [
             {
-                appName:   APP_NAME,
+                appName  : APP_NAME,
                 serverURL: SERVER_URL,
-                appId:     APP_ID,
+                appId    : APP_ID,
                 masterKey: MASTER_KEY,
-                iconName:  'icon.png'
+                iconName : 'icon.png'
             }
         ],
-        users:       [
+        users      : [
             {
                 user: DASHBOARD_USER, // Used to log in to your Parse Dashboard
                 pass: DASHBOARD_PASSWORD
