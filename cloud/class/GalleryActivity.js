@@ -66,7 +66,7 @@ function afterSave(req, res) {
 
         // if comment your photo
         if (result.length > 2) {
-            message = message + '" ' + result[2].get('text') + '"'
+            message = message + ' ' + result[2].get('text');
         }
 
         // Trim our message to 140 characters.
