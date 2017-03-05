@@ -374,7 +374,7 @@ function follow(req, res) {
 
                         // follow
                         let activity = {
-                            action:   'followUser',
+                            action:   'is following you',
                             fromUser: req.user,
                             toUser:   toUser,
                         };
@@ -427,10 +427,15 @@ function isFollow(req, res) {
 
 function profile(req, res) {
     const params   = req.params;
+    const user     = req.user;
     const username = params.username;
 
-    if (!req.user) {
+    if (!user) {
         return res.error('Not Authorized');
+    }
+
+    if (!username) {
+        return res.error('Username required');
     }
 
     findUsername(username)
@@ -438,11 +443,11 @@ function profile(req, res) {
         .then(toUser => {
             new Parse.Query('UserFollow')
                 .equalTo('from', req.user)
-                .equalTo('to', toUser.get('user'))
+                .equalTo('to', toUser)
                 .count(MasterKey)
                 .then(isFollow => {
-                    let profile      = UserData.parseUserData(toUser);
-                    profile.isFollow = isFollow ? true : false;
+                    let profile = UserData.parseUserData(toUser);
+                    profile['isFollow'] = isFollow ? true : false;
                     res.success(profile);
                 }).catch(res.error);
         }).catch(res.error);
@@ -742,7 +747,7 @@ function validateEmail(req, res) {
 
 // Album Gallery
 function incrementAlbumGallery(user) {
-    return UserData.getByUser(user).then(user => user.increment('albumTotal',1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('albumTotal', 1).save(null, MasterKey));
 }
 
 function decrementAlbumGallery(user) {
@@ -756,21 +761,21 @@ function updateGalleriesTotal(user, galleriesTotal) {
 
 //seguidores
 function incrementFollowers(user) {
-    return UserData.getByUser(user).then(user => user.increment('followersTotal',1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('followersTotal', 1).save(null, MasterKey));
 }
 function decrementFollowers(user) {
     return UserData.getByUser(user).then(user => user.increment('followersTotal', -1).save(null, MasterKey));
 }
 //seguindo
 function incrementFollowing(user) {
-    return UserData.getByUser(user).then(userData => userData.increment('followingsTotal',1).save(null, MasterKey));
+    return UserData.getByUser(user).then(userData => userData.increment('followingsTotal', 1).save(null, MasterKey));
 }
 function decrementFollowing(user) {
     return UserData.getByUser(user).then(user => user.increment('followingsTotal', -1).save(null, MasterKey));
 }
 // comment
 function incrementComment(user) {
-    return UserData.getByUser(user).then(user => user.increment('commentsTotal',1).save(null, MasterKey));
+    return UserData.getByUser(user).then(user => user.increment('commentsTotal', 1).save(null, MasterKey));
 }
 
 function decrementComment(user) {

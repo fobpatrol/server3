@@ -498,19 +498,18 @@ function likeGallery(req, res, next) {
         if (result && result.length > 0) {
             objParse.increment('likesTotal', -1);
             relation.remove(user);
-            response.action = 'unlike';
+            //response.action = 'unlike';
         } else {
             objParse.increment('likesTotal');
             relation.add(user);
-            response.action = 'like';
+            response.action = 'liked your photo';
+            activity = {
+                fromUser: user,
+                gallery:  objParse,
+                action:   response.action,
+                toUser:   objParse.attributes.user
+            };
         }
-
-        activity = {
-            fromUser: user,
-            gallery:  objParse,
-            action:   response.action,
-            toUser:   objParse.attributes.user
-        };
 
         return objParse.save(null, MasterKey);
 

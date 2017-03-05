@@ -62,6 +62,20 @@ function get(objectId) {
     return new Parse.Query(ParseObject).get(objectId);
 }
 
+function pendingRead(channel) {
+    return Parse.Query(ParseObject)
+        .equalTo('isRead', false)
+        .equalTo('channel', channel)
+        .count(MasterKey)
+}
+
+function updateQtdTotal(channel) {
+    return pendingRead(channel)
+        .then(total => channel.set('pending', total))
+        .then(channel => channel.save())
+}
+
+
 function afterSave(req, res) {
     const channel = req.object.get('channel');
     const user    = req.user;
@@ -76,7 +90,8 @@ function afterSave(req, res) {
         .relation('users')
         .query()
         .find(MasterKey)
-        .then(users => _.filter(users, _user => user.id != _user.id).map(user => sendPushMessage(message, user, channel.id)))
+        .then(users => _.filter(users, _user => user.id != _user.id).map(user => sendPushMessage(message, req.user, user, channel.id)))
+        .then(() => updateQtdTotal(channel))
         .then(() => {
             console.log('push sent. args received: ' + JSON.stringify(arguments) + '\n');
             res.success({
@@ -86,36 +101,36 @@ function afterSave(req, res) {
         }).catch(res.error);
 
 
-    function sendPushMessage(message, toUser, channel) {
-        // Create message to push
-        let dataMessage = {
-            title:           user.get('name'),
-            alert:           message,
-            badge:           'Increment',
-            event:           'chat',
-            chat:            channel,
-            icon:            'icon.png',
-            iconColor:       '#045F54',
-            uri:             'https://photogram.codevibe.io/chat/' + channel.id,
-            AnotherActivity: true
-        };
-
-        // Get user sent
-        let photo = user.get('photo');
-
-        // Get photo user
-        if (photo) {
-            dataMessage.image = photo.url();
-        }
-        let pushMessage = {
-            channels: [toUser.get('username')],
-            data:     dataMessage
-        };
-        return Parse.Push.send(pushMessage, MasterKey);
-    }
-
 }
 
+
+function sendPushMessage(message, user, toUser, channel) {
+    // Create message to push
+    let dataMessage = {
+        title:           user.get('name'),
+        alert:           message,
+        badge:           'Increment',
+        event:           'chat',
+        chat:            channel,
+        icon:            'icon.png',
+        iconColor:       '#045F54',
+        uri:             'https://photogram.codevibe.io/chat/' + channel.id,
+        AnotherActivity: true
+    };
+
+    // Get user sent
+    let photo = user.get('photo');
+
+    // Get photo user
+    if (photo) {
+        dataMessage.image = photo.url();
+    }
+    let pushMessage = {
+        channels: [toUser.get('username')],
+        data:     dataMessage
+    };
+    return Parse.Push.send(pushMessage, MasterKey);
+}
 
 function getMessages(req, res) {
     const user      = req.user;

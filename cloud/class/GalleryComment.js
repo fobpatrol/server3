@@ -73,7 +73,7 @@ function afterSave(req, res) {
             gallery.save();
 
             let activity = {
-                action  : 'comment',
+                action  : 'commented on your photo',
                 fromUser: req.user,
                 comment : comment,
                 toUser  : gallery.attributes.user,

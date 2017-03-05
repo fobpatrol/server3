@@ -1,9 +1,10 @@
 'use strict'
-const _ = require('lodash')
-const User = require('./../class/User')
+const _           = require('lodash')
+const User        = require('./../class/User')
+const translate   = require('./../../lib/translate');
 const ParseObject = Parse.Object.extend('GalleryActivity')
-const UserFollow = Parse.Object.extend('UserFollow')
-const MasterKey = {useMasterKey: true}
+const UserFollow  = Parse.Object.extend('UserFollow')
+const MasterKey   = {useMasterKey: true}
 
 module.exports = {
     afterSave: afterSave,
@@ -54,18 +55,19 @@ function afterSave(req, res) {
 
     Parse.Promise.when(promises).then(result => {
         let fromUser = result[0]
-        let toUser = result[1]
-        let action = req.object.get('action')
-        let UserLang = toUser.attributes.lang || 'en'
-        let lang = require('./../helpers/loadJson')(__dirname + '/../../i18n/' + UserLang + '.json')
-        let channel = toUser.attributes.username
+        let toUser   = result[1]
+        let action   = req.object.get('action')
+        let UserLang = toUser.get('lang') || 'en';
 
-        if (lang[action]) {
-            let message = fromUser.attributes.name + lang[action]
+        let action  = translate(UserLang, action);
+        let channel = toUser.get('username');
+
+        if (action) {
+            let message = fromUser.get('name') + ' ' + action
 
             // if comment your photo
             if (result.length > 2) {
-                message = message + '"' + result[2].attributes.text + '"'
+                message = message + '" ' + result[2].get('text') + '"'
             }
 
             // Trim our message to 140 characters.
@@ -95,6 +97,8 @@ function afterSave(req, res) {
                 console.log('push failed. ' + JSON.stringify(error) + '\n')
                 res.error(error)
             });
+        } else {
+            res.success();
         }
 
     })
@@ -129,7 +133,7 @@ function create(obj, acl) {
 }
 
 function feed(req, res, next) {
-    const _page = req.params.page || 1
+    const _page  = req.params.page || 1
     const _limit = req.params.limit || 10
 
     console.log('Start feed', req.params)
