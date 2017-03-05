@@ -482,7 +482,6 @@ function likeGallery(req, res, next) {
     }
 
     let objParse;
-    let activity;
     let response = {action: null};
 
     new Parse.Query('Gallery').get(galleryId).then(gallery => {
@@ -502,19 +501,18 @@ function likeGallery(req, res, next) {
         } else {
             objParse.increment('likesTotal');
             relation.add(user);
-            response.action = 'liked your photo';
-            activity = {
-                fromUser: user,
-                gallery:  objParse,
-                action:   response.action,
-                toUser:   objParse.attributes.user
-            };
-        }
 
+        }
         return objParse.save(null, MasterKey);
 
     }).then(data => {
         if (user.id != objParse.attributes.user.id) {
+            let activity = {
+                fromUser: user,
+                gallery:  objParse,
+                action:   'liked your photo',
+                toUser:   objParse.attributes.user
+            };
             GalleryActivity.create(activity);
         }
         res.success(response);

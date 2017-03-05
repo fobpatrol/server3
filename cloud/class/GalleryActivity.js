@@ -1,7 +1,7 @@
 'use strict'
 const _           = require('lodash')
 const User        = require('./../class/User')
-const translate   = require('./../../lib/translate');
+const translate   = require('./../helpers/translate');
 const ParseObject = Parse.Object.extend('GalleryActivity')
 const UserFollow  = Parse.Object.extend('UserFollow')
 const MasterKey   = {useMasterKey: true}
@@ -58,47 +58,45 @@ function afterSave(req, res) {
         let toUser   = result[1]
         let UserLang = toUser.get('lang') || 'en';
 
-        let action  = translate(UserLang, req.object.get('action'));
         let channel = toUser.get('username');
+        let _action = req.object.get('action');
 
-        if (action) {
-            let message = fromUser.get('name') + ' ' + action
+        let action  = translate(UserLang, _action);
+        let message = fromUser.get('name') + ' ' + action;
 
-            // if comment your photo
-            if (result.length > 2) {
-                message = message + '" ' + result[2].get('text') + '"'
-            }
-
-            // Trim our message to 140 characters.
-            if (message.length > 140) {
-                message = message.substring(0, 140)
-            }
-
-            console.log(message)
-
-            Parse.Push.send({
-                channels: [channel],
-                data:     {
-                    alert: message, // Set our alert message.
-                    badge: 'Increment', // Increment the target device's badge count.
-                    // The following keys help Anypic load the correct photo in response to this push notification.
-                    event: 'activity',
-                    fu:    fromUser.id, // From User
-                    pid:   toUser.id // Photo Id
-                }
-            }, MasterKey).then(function () {
-                console.log('push sent. args received: ' + JSON.stringify(arguments) + '\n')
-                res.success({
-                    status: 'push sent',
-                    ts:     Date.now()
-                })
-            }).catch((error) => {
-                console.log('push failed. ' + JSON.stringify(error) + '\n')
-                res.error(error)
-            });
-        } else {
-            res.success();
+        // if comment your photo
+        if (result.length > 2) {
+            message = message + '" ' + result[2].get('text') + '"'
         }
+
+        // Trim our message to 140 characters.
+        if (message.length > 140) {
+            message = message.substring(0, 140)
+        }
+
+        console.log(message)
+
+        Parse.Push.send({
+            channels: [channel],
+            data:     {
+                alert: message, // Set our alert message.
+                badge: 'Increment', // Increment the target device's badge count.
+                // The following keys help Anypic load the correct photo in response to this push notification.
+                event: 'activity',
+                fu:    fromUser.id, // From User
+                pid:   toUser.id // Photo Id
+            }
+        }, MasterKey).then(function () {
+            console.log('push sent. args received: ' + JSON.stringify(arguments) + '\n')
+            res.success({
+                status: 'push sent',
+                ts:     Date.now()
+            })
+        }).catch((error) => {
+            console.log('push failed. ' + JSON.stringify(error) + '\n')
+            res.error(error)
+        });
+
 
     })
 }
