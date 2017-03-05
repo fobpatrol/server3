@@ -56,10 +56,9 @@ function afterSave(req, res) {
     Parse.Promise.when(promises).then(result => {
         let fromUser = result[0]
         let toUser   = result[1]
-        let action   = req.object.get('action')
         let UserLang = toUser.get('lang') || 'en';
 
-        let action  = translate(UserLang, action);
+        let action  = translate(UserLang, req.object.get('action'));
         let channel = toUser.get('username');
 
         if (action) {
