@@ -11,7 +11,7 @@
       "name": "parse-server",
       "script": "index.js",
       "node_args": [
-//        "--debug=7000"
+        //        "--debug=7000"
       ],
       "watch": true,
       //      "instances": 2,
@@ -41,30 +41,22 @@
         // (required) - The application id to host with this server instance.
         // You can use any arbitrary string. For migrated
         "APP_ID": "Q2SzjjC9C1Ta68f67JYPq9925hhz10nA",
-        
         // (required) - The master key to use for overriding ACL security.
         // Client-keys like the javascript key or the .NET key are not necessary with parse-server
         // If you wish you require them, you can set them as options in the initialization above:
         // javascriptKey, restAPIKey, dotNetKey, clientKey
         "JAVASCRIPT_KEY": "dOsjDb9wLq5PIQ10cH8D9u5C97isVL1D",
-
-        // (required) - The for Push Notification
-        "CLIENT_KEY": "dOsjDb9wLq5PIQ10cH8D9u5C97isVL1D",
-
         // (required) - The application id to host with this server instance.
         "MASTER_KEY": "yY1n4p074b64D4fJxw4U7LBkJE3IIPC8",
-
         // (required) - The application id to host with this server instance.
         "MASTER_REST_KEY": "a52XH29fXXbzY78w1Ux7o0Yv710g97CL",
-        
         // Parse Dashboard
         "DASHBOARD_URL": "/dashboard",
         "DASHBOARD_USER": "admin",
         "DASHBOARD_PASSWORD": "admin123",
-
         // (optional) - Local folder for Storage Files
-        "UPLOAD_LOCAL_PATH": "./storage"
-        
+        "UPLOAD_LOCAL_PATH": "./storage",
+
         // (optional) - S3 for Storage Files
         // Files are hosted via automaticamentes GridStore Adapter in MongoDB
         // If you want to host the files on S3 fill in the form below
@@ -73,13 +65,15 @@
         //"BUCKET_NAME": "",
 
         // (optional) - MAILGUN for send Email
-//        "MAILGUN_API_KEY": "",
-//        "MAILGUN_DOMAIN": "",
-//        "MAILGUN_FROM_ADDRESS": "",
-        
+        //        "MAILGUN_API_KEY": "",
+        //        "MAILGUN_DOMAIN": "",
+        //        "MAILGUN_FROM_ADDRESS": "",,
+
+
         // Firebase Push Notification
-//        "FIREBASE_API_KEY": "",
-//        "FIREBASE_SENDER_ID": ""
+        "CLIENT_KEY": "YourClientKey",
+        "FIREBASE_API_KEY": "FirebaseApiKey",
+        "FIREBASE_SENDER_ID": "FirebaseSenderID"
       }
     }
   ]
