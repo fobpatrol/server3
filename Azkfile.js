@@ -74,7 +74,7 @@ systems({
             domains: ["#{manifest.dir}-#{system.name}.#{azk.default_domain}"],
         },
         ports: {
-            http: "4040"
+            http: "1337"
         },
         envs: {
             // NGROK_SUBDOMAIN : "parse-server",
