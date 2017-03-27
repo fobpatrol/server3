@@ -33,27 +33,27 @@ systems({
             // in ports/http below, and that it's also the same
             // if you're setting it in a .env file
             NODE_ENV: "dev",
-            PORT: "3000",
+            PORT: "1337",
             DOMAIN: "#{system.name}.#{azk.default_domain}",
             SERVER_URL: "#{system.name}.#{azk.default_domain}/parse",
             // DEFINES
-            APP_NAME: 'Photogram',
-            APP_ID: 'myAppId',
-            MASTER_KEY: 'myMasterKey',
-            MASTER_REST_KEY: 'MPhotogramMasterKey',
+            APP_NAME: 'FarmBooth',
+            APP_ID: 'fde3a43c-8f25-44e6-8aa8-3923d78338f1',
+            MASTER_KEY: 'f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT',
+            MASTER_REST_KEY: 'f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT',
 
             // DASHBOARD
             DASHBOARD_USER: 'admin',
-            DASHBOARD_PASSWORD: 'admin123',
+            DASHBOARD_PASSWORD: 'firewarden',
 
             // S3
             // AWS_ACCESS_KEY_ID: '',
             // AWS_SECRET_ACCESS_KEY: '',
             // BUCKET_NAME: '',
             //MAILGUN EMAIL
-            // MAILGUN_API_KEY: 'key-3a05e956706a4bd579982460b96cf43a',
-            // MAILGUN_DOMAIN: '',
-            // MAILGUN_FROM_ADDRESS: '',
+             MAILGUN_API_KEY: 'key-6f8a8a2130984984e97ab875b989365c',
+             MAILGUN_DOMAIN: 'mg.farmbooth.ca',
+             MAILGUN_FROM_ADDRESS: 'noreply@mg.farmbooth.ca',
         },
     },
 
