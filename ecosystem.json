@@ -30,29 +30,29 @@
         "PARSE_MOUNT": "/parse",
         // (required) - The connection string for your database, i.e. mongodb://user:pass@host.com/dbname.
         // Be sure to URL encode your password if your password has special characters.
-        "DATABASE_URI": "mongodb://localhost:27017/photogram",
+        "DATABASE_URI": "mongodb://heroku_b2bqs7tf:fletekbphl10m0alc6ff3u5bod@ds153669.mlab.com:53669/heroku_b2bqs7tf",
         // URL to your Parse Server (don't forget to specify http:// or https://).
         // This URL will be used when making requests to Parse Server from Cloud Code.
-        "SERVER_URL": "http://localhost:1337/parse",
+        "SERVER_URL": "https://farmbooth.herokuapp.com/parse",
         //        "SERVER_URL": "https://photogramapp.com/parse",
         // Your apps name. This will appear in the subject and body of the emails that are sent.
-        "APP_NAME": "Photogram",
+        "APP_NAME": "FarmBooth",
         // (required) - The application id to host with this server instance.
         // You can use any arbitrary string. For migrated
-        "APP_ID": "Q2SzjjC9C1Ta68f67JYPq9925hhz10nA",
+        "APP_ID": "fde3a43c-8f25-44e6-8aa8-3923d78338f1",
         // (required) - The master key to use for overriding ACL security.
         // Client-keys like the javascript key or the .NET key are not necessary with parse-server
         // If you wish you require them, you can set them as options in the initialization above:
         // javascriptKey, restAPIKey, dotNetKey, clientKey
-        "JAVASCRIPT_KEY": "dOsjDb9wLq5PIQ10cH8D9u5C97isVL1D",
+        "JAVASCRIPT_KEY": "6923d78338f18aa844e68f25fde3a43c",
         // (required) - The application id to host with this server instance.
-        "MASTER_KEY": "yY1n4p074b64D4fJxw4U7LBkJE3IIPC8",
+        "MASTER_KEY": "f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT",
         // (required) - The application id to host with this server instance.
-        "MASTER_REST_KEY": "a52XH29fXXbzY78w1Ux7o0Yv710g97CL",
+        "MASTER_REST_KEY": "f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT",
         // Parse Dashboard
         "DASHBOARD_URL": "/dashboard",
         "DASHBOARD_USER": "admin",
-        "DASHBOARD_PASSWORD": "admin123",
+        "DASHBOARD_PASSWORD": "firewarden",
         // (optional) - Local folder for Storage Files
         "UPLOAD_LOCAL_PATH": "./storage",
 
@@ -64,15 +64,15 @@
         //"BUCKET_NAME": "",
 
         // (optional) - MAILGUN for send Email
-        //        "MAILGUN_API_KEY": "",
-        //        "MAILGUN_DOMAIN": "",
-        //        "MAILGUN_FROM_ADDRESS": "",,
+                "MAILGUN_API_KEY": "key-6f8a8a2130984984e97ab875b989365c",
+                "MAILGUN_DOMAIN": "mg.farmbooth.ca",
+                "MAILGUN_FROM_ADDRESS": "noreply@mg.farmbooth.ca",
 
 
         // Firebase Push Notification
-        "CLIENT_KEY": "YourClientKey",
-        "FIREBASE_API_KEY": "FirebaseApiKey",
-        "FIREBASE_SENDER_ID": "FirebaseSenderID"
+  //      "CLIENT_KEY": "YourClientKey",
+  //      "FIREBASE_API_KEY": "FirebaseApiKey",
+  //      "FIREBASE_SENDER_ID": "FirebaseSenderID"
       }
     }
   ]

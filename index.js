@@ -10,13 +10,13 @@ const cors           = require('cors');
 
 // Parse configuration
 const PORT                 = process.env.PORT || 1337;
-const DATABASE_URI         = process.env.MONGO_URL || process.env.DATABASE_URI || process.env.MONGOLAB_URI || 'mongodb://localhost:27017/dev';
-const SERVER_URL           = process.env.SERVER_URL || 'http://localhost:1337/parse';
-const APP_ID               = process.env.APP_ID || 'myAppId';
-const MASTER_KEY           = process.env.MASTER_KEY || 'myMasterKey';
-const JAVASCRIPT_KEY       = process.env.JAVASCRIPT_KEY || 'unset';
-const CLIENT_KEY           = process.env.CLIENT_KEY || 'unset';
-const APP_NAME             = process.env.APP_NAME || 'parseApp';
+const DATABASE_URI         = process.env.MONGO_URL || process.env.DATABASE_URI || process.env.MONGOLAB_URI || 'mongodb://heroku_b2bqs7tf:fletekbphl10m0alc6ff3u5bod@ds153669.mlab.com:53669/heroku_b2bqs7tf';
+const SERVER_URL           = process.env.SERVER_URL || 'https://farmbooth.herokuapp.com/parse';
+const APP_ID               = process.env.APP_ID || 'fde3a43c-8f25-44e6-8aa8-3923d78338f1';
+const MASTER_KEY           = process.env.MASTER_KEY || 'f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT';
+const JAVASCRIPT_KEY       = process.env.JAVASCRIPT_KEY || '6923d78338f18aa844e68f25fde3a43c';
+const CLIENT_KEY           = process.env.CLIENT_KEY || 'f1pwD8yE9hRFQrlFXA3SUosh9lgSAATT';
+const APP_NAME             = process.env.APP_NAME || 'FarmBooth';
 const PARSE_MOUNT          = process.env.PARSE_MOUNT || '/parse';
 const CLOUD_CODE_MAIN      = process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js';
 const LIVEQUERY_CLASSNAMES = ['GalleryActivity', 'GalleryComment', 'ChatChannel', 'ChatMessage'];
@@ -137,7 +137,7 @@ app.get('/', (req, res) => res.render('index'));
 // Parse Dashboard
 const DASHBOARD_URL      = process.env.DASHBOARD_URL || '/dashboard';
 const DASHBOARD_USER     = process.env.DASHBOARD_USER || 'admin';
-const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin123';
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'firewarden';
 if (DASHBOARD_USER) {
     const dashboard = new ParseDashboard({
         apps       : [

@@ -795,7 +795,14 @@ function parseUser(user) {
         status:          user.get('status'),
         isFollow:        false,
         galleries:       [],
-        createdAt:       user.createdAt
+        createdAt:       user.createdAt,
+        market:          user.get('market'),
+        isMember:        user.get('isMember'),
+        lat:             user.get('lat'),
+        long:            user.get('long'),
+        latestPost:      user.get('latestPost'),
+        vendor:          user.get('vendor'),
+        views:           user.get('views'),
     };
     if (user.get('photo')) {
         obj.photo = user.get('photo').url();

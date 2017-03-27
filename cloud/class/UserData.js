@@ -31,7 +31,14 @@ function parseUserData(_userData) {
             status:          _userData.get('status'),
             isFollow:        false,
             galleries:       [],
-            createdAt:       _userData.createdAt
+            createdAt:       _userData.createdAt,
+            market:          _userData.get('market'),
+            isMember:        _userData.get('isMember'),
+            lat:             _userData.get('lat'),
+            long:            _userData.get('long'),
+            latestPost:      _userData.get('latestPost'),
+            vendor:          _userData.get('vendor'),
+            views:           _userData.get('views'),
         };
         if (_userData.get('photo')) {
             obj.photo = _userData.get('photo').url();
